@@ -152,7 +152,7 @@ body {
     padding: 12px 15px 12px 45px;
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    background: var(--card-bg);
+    background: var(--secondary-bg);
     color: var(--text-primary);
     font-size: 14px;
     transition: all var(--transition-fast);
@@ -178,29 +178,21 @@ body {
 }
 
 .entity-item {
-    margin-bottom: 5px;
-    border-radius: 12px;
-    overflow: visible;
-    transition: all var(--transition-normal);
-    background: var(--card-bg);
-    border: 1px solid transparent;
-    position: relative;
-    opacity: 1;
-}
-
-.entity-item:hover {
-    border-color: var(--border-color);
-    box-shadow: 0 4px 12px var(--shadow-color);
+    margin-bottom: 2px;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: background-color var(--transition-fast);
 }
 
 .entity-header {
-    padding: 15px 20px;
+    padding: 12px 15px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    transition: all var(--transition-fast);
+    transition: background-color var(--transition-fast), color var(--transition-fast);
     user-select: none;
+    border-radius: 6px;
 }
 
 .entity-header:hover {
@@ -208,6 +200,20 @@ body {
 }
 
 .entity-header.active {
+    background: var(--info-color);
+    color: #ffffff;
+}
+
+.entity-header.active .entity-name {
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.entity-header.active .entity-icon {
+    color: #ffffff;
+}
+
+.entity-item.has-active-child .entity-header {
     background: var(--active-bg);
 }
 
@@ -215,6 +221,8 @@ body {
     flex: 1;
     font-size: 14px;
     font-weight: 500;
+    color: var(--text-primary);
+    transition: color var(--transition-fast);
 }
 
 .entity-icon {
@@ -232,27 +240,29 @@ body {
     max-height: 0;
     overflow: hidden;
     transition: max-height var(--transition-normal) ease-out;
-    background: var(--secondary-bg);
+    padding-left: 15px;
 }
 
 .entity-item.expanded .subtypes-container {
-    max-height: 1000px;
+    max-height: 500px;
 }
 
 .subtype-item {
-    padding: 12px 20px 12px 40px;
+    padding: 10px 15px 10px 25px;
     cursor: pointer;
     font-size: 13px;
     color: var(--text-secondary);
     transition: all var(--transition-fast);
     position: relative;
-    opacity: 1;
+    border-radius: 6px;
+    margin-top: 2px;
+    margin-bottom: 2px;
 }
 
 .subtype-item::before {
     content: '';
     position: absolute;
-    left: 20px;
+    left: 10px;
     top: 50%;
     transform: translateY(-50%);
     width: 4px;
@@ -260,6 +270,7 @@ body {
     border-radius: 50%;
     background: var(--text-secondary);
     opacity: 0.5;
+    transition: all var(--transition-fast);
 }
 
 .subtype-item:hover {
@@ -268,15 +279,13 @@ body {
 }
 
 .subtype-item.active {
-    background: var(--active-bg);
-    color: var(--text-primary);
+    background: var(--info-color);
+    color: #ffffff;
     font-weight: 500;
 }
 
 .subtype-item.active::before {
-    width: 6px;
-    height: 6px;
-    background: var(--info-color);
+    background: #ffffff;
     opacity: 1;
 }
 
@@ -419,7 +428,6 @@ body {
 
 .clinical-phase {
     margin-bottom: 60px;
-    opacity: 1;
 }
 
 .phase-header {
@@ -463,13 +471,11 @@ body {
     padding: 25px;
     position: relative;
     transition: all var(--transition-normal);
-    transform: translateZ(0);
     will-change: transform;
-    opacity: 1;
 }
 
 .recommendation-card:hover {
-    transform: translateY(-5px);
+    transform: scale(1.02);
     box-shadow: 0 15px 40px var(--shadow-color);
 }
 

@@ -10,7 +10,6 @@ class OncoGuidelinesApp {
         this.attachEventListeners();
         this.initializeLucideIcons();
         this.loadData();
-        this.initializeGSAP();
     }
 
     initializeElements() {
@@ -41,17 +40,8 @@ class OncoGuidelinesApp {
 
     toggleTheme() {
         const body = document.body;
-        const isCurrentlyLight = body.classList.contains('light-mode');
-        
-        gsap.to(this.elements.themeToggle, {
-            rotation: isCurrentlyLight ? 180 : -180,
-            duration: 0.5,
-            ease: "power2.inOut",
-            onComplete: () => {
-                body.classList.toggle('light-mode');
-                body.classList.toggle('dark-mode');
-            }
-        });
+        body.classList.toggle('light-mode');
+        body.classList.toggle('dark-mode');
     }
 
     async loadData() {
@@ -71,15 +61,8 @@ class OncoGuidelinesApp {
     showLoading(show) {
         if (show) {
             this.elements.loadingOverlay.classList.add('active');
-            gsap.set(this.elements.loadingOverlay, { opacity: 1 });
         } else {
-            gsap.to(this.elements.loadingOverlay, {
-                opacity: 0,
-                duration: 0.3,
-                onComplete: () => {
-                    this.elements.loadingOverlay.classList.remove('active');
-                }
-            });
+            this.elements.loadingOverlay.classList.remove('active');
         }
     }
 
@@ -104,7 +87,6 @@ class OncoGuidelinesApp {
         });
         
         lucide.createIcons();
-        this.animateNavigationItems();
     }
 
     filterEntities(entities) {
@@ -125,7 +107,6 @@ class OncoGuidelinesApp {
         entityDiv.dataset.entityIndex = index;
         
         const hasMultipleSubtypes = entity.subtypes.length > 1;
-        const hasGuidelines = entity.subtypes.some(st => st.guidelines.length > 0);
         
         entityDiv.innerHTML = `
             <div class="entity-header" data-entity="${entity.entityName}">
@@ -158,47 +139,32 @@ class OncoGuidelinesApp {
     }
 
     handleEntityClick(entity, entityDiv) {
-        const wasExpanded = entityDiv.classList.contains('expanded');
         const hasMultipleSubtypes = entity.subtypes.length > 1;
         
         if (hasMultipleSubtypes) {
-            if (wasExpanded) {
-                entityDiv.classList.remove('expanded');
-                const subtypesContainer = entityDiv.querySelector('.subtypes-container');
-                gsap.to(subtypesContainer, {
-                    maxHeight: 0,
-                    duration: 0.3,
-                    ease: "power2.out"
-                });
-            } else {
-                document.querySelectorAll('.entity-item.expanded').forEach(item => {
-                    if (item !== entityDiv) {
-                        item.classList.remove('expanded');
-                        const container = item.querySelector('.subtypes-container');
-                        if (container) {
-                            gsap.to(container, {
-                                maxHeight: 0,
-                                duration: 0.3,
-                                ease: "power2.out"
-                            });
-                        }
+            const subtypesContainer = entityDiv.querySelector('.subtypes-container');
+            const isExpanded = entityDiv.classList.toggle('expanded');
+
+            document.querySelectorAll('.entity-item.expanded').forEach(item => {
+                if (item !== entityDiv) {
+                    item.classList.remove('expanded');
+                    const container = item.querySelector('.subtypes-container');
+                    if(container) {
+                        container.style.maxHeight = null;
                     }
-                });
-                
-                entityDiv.classList.add('expanded');
-                const subtypesContainer = entityDiv.querySelector('.subtypes-container');
-                const height = subtypesContainer.scrollHeight;
-                
-                gsap.to(subtypesContainer, {
-                    maxHeight: height,
-                    duration: 0.3,
-                    ease: "power2.out"
-                });
-            }
-        } else {
-            document.querySelectorAll('.entity-header').forEach(header => {
-                header.classList.remove('active');
+                }
             });
+
+            if (isExpanded) {
+                subtypesContainer.style.maxHeight = subtypesContainer.scrollHeight + "px";
+            } else {
+                subtypesContainer.style.maxHeight = null;
+            }
+
+        } else {
+            document.querySelectorAll('.subtype-item.active').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.entity-item.has-active-child').forEach(item => item.classList.remove('has-active-child'));
+            document.querySelectorAll('.entity-header.active').forEach(header => header.classList.remove('active'));
             
             entityDiv.querySelector('.entity-header').classList.add('active');
             
@@ -209,15 +175,13 @@ class OncoGuidelinesApp {
     }
 
     handleSubtypeClick(entity, subtype, subtypeDiv) {
-        document.querySelectorAll('.subtype-item').forEach(item => {
-            item.classList.remove('active');
-        });
-        
-        document.querySelectorAll('.entity-header').forEach(header => {
-            header.classList.remove('active');
-        });
+        document.querySelectorAll('.subtype-item.active').forEach(item => item.classList.remove('active'));
+        document.querySelectorAll('.entity-item.has-active-child').forEach(item => item.classList.remove('has-active-child'));
+        document.querySelectorAll('.entity-header.active').forEach(header => header.classList.remove('active'));
         
         subtypeDiv.classList.add('active');
+        subtypeDiv.closest('.entity-item').classList.add('has-active-child');
+        
         this.loadEntityGuidelines(entity, subtype);
     }
 
@@ -256,14 +220,6 @@ class OncoGuidelinesApp {
             tab.addEventListener('click', () => this.loadGuideline(guideline));
             this.elements.societyTabs.appendChild(tab);
         });
-        
-        gsap.from(this.elements.societyTabs.children, {
-            y: -20,
-            opacity: 1,
-            duration: 0.3,
-            stagger: 0.1,
-            ease: "power2.out"
-        });
     }
 
     loadGuideline(guideline) {
@@ -286,12 +242,10 @@ class OncoGuidelinesApp {
         
         const groupedRecommendations = this.groupRecommendationsByClinicalSituation(guideline.recommendationGroups);
         
-        Object.entries(groupedRecommendations).forEach(([situation, recommendations], index) => {
-            const phaseElement = this.createPhaseElement(situation, recommendations, index);
+        Object.entries(groupedRecommendations).forEach(([situation, recommendations]) => {
+            const phaseElement = this.createPhaseElement(situation, recommendations);
             this.elements.timelineContainer.appendChild(phaseElement);
         });
-        
-        this.animateTimeline();
     }
 
     groupRecommendationsByClinicalSituation(recommendationGroups) {
@@ -310,7 +264,7 @@ class OncoGuidelinesApp {
         return grouped;
     }
 
-    createPhaseElement(situation, recommendations, index) {
+    createPhaseElement(situation, recommendations) {
         const phaseDiv = document.createElement('div');
         phaseDiv.className = 'clinical-phase';
         
@@ -387,9 +341,6 @@ class OncoGuidelinesApp {
             </div>
         `;
         
-        card.addEventListener('mouseenter', () => this.handleCardHover(card, true));
-        card.addEventListener('mouseleave', () => this.handleCardHover(card, false));
-        
         return card;
     }
 
@@ -412,22 +363,6 @@ class OncoGuidelinesApp {
         if (strengthLower.includes('kann') || strengthLower === 'optional' || strengthLower === 'fakultativ') return '○';
         if (strengthLower.includes('nicht')) return '✗';
         return '✓';
-    }
-
-    handleCardHover(card, isEntering) {
-        if (isEntering) {
-            gsap.to(card, {
-                scale: 1.02,
-                duration: 0.3,
-                ease: "power2.out"
-            });
-        } else {
-            gsap.to(card, {
-                scale: 1,
-                duration: 0.3,
-                ease: "power2.out"
-            });
-        }
     }
 
     showNoGuidelines() {
@@ -461,46 +396,6 @@ class OncoGuidelinesApp {
                 this.toggleTheme();
             }
         }
-    }
-
-    animateNavigationItems() {
-        gsap.from('.entity-item', {
-            x: -30,
-            opacity: 1,
-            duration: 0.4,
-            stagger: 0.05,
-            ease: "power2.out"
-        });
-    }
-
-    animateTimeline() {
-        ScrollTrigger.batch('.clinical-phase', {
-            onEnter: elements => {
-                gsap.from(elements, {
-                    y: 50,
-                    opacity: 1,
-                    duration: 0.6,
-                    stagger: 0.15,
-                    ease: "power2.out"
-                });
-            },
-            once: true
-        });
-
-        gsap.from('.recommendation-card', {
-            scale: 0.9,
-            opacity: 1,
-            duration: 0.5,
-            stagger: {
-                grid: "auto",
-                amount: 0.5
-            },
-            ease: "power2.out"
-        });
-    }
-
-    initializeGSAP() {
-        gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
     }
 }
 
