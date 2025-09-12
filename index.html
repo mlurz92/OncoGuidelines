@@ -3,61 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>OncoGuidelines - Diagnostic Pathways</title>
-    <link rel="stylesheet" href="style/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <title>OncoGuidelines - Klinische Leitlinien für bildgebende Diagnostik</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="light-theme">
+<body class="light-mode">
+    <div class="theme-toggle" id="themeToggle">
+        <i data-lucide="sun" class="theme-icon light-icon"></i>
+        <i data-lucide="moon" class="theme-icon dark-icon"></i>
+    </div>
 
-    <main id="app-container">
-        <nav id="main-nav">
-            <div class="nav-header">
-                <i class="fa-solid fa-book-medical"></i>
-                <span class="nav-header-text">OncoGuidelines</span>
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">OncoGuidelines</h2>
+            <div class="sidebar-search">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" placeholder="Tumorentität suchen..." id="searchInput">
             </div>
-            <ul id="nav-list">
-            </ul>
-        </nav>
+        </div>
+        <div class="sidebar-content" id="sidebarContent"></div>
+    </nav>
 
-        <div id="content-area">
-            <header id="app-header">
-                <div class="header-content">
-                    <h1 id="guideline-title-display">Willkommen</h1>
-                    <p id="guideline-subtitle-display">Bitte wählen Sie eine Leitlinie aus der Navigation.</p>
-                </div>
-                <div id="theme-switcher" role="button" aria-label="Toggle light/dark theme">
-                    <i class="fa-solid fa-sun theme-icon" id="sun-icon"></i>
-                    <i class="fa-solid fa-moon theme-icon" id="moon-icon"></i>
-                </div>
-            </header>
+    <main class="main-container">
+        <div class="guideline-header" id="guidelineHeader">
+            <div class="entity-info">
+                <h1 class="entity-title" id="entityTitle">Wählen Sie eine Tumorentität</h1>
+                <p class="entity-subtitle" id="entitySubtitle">Navigieren Sie über das Menü links</p>
+            </div>
+            <div class="society-tabs" id="societyTabs"></div>
+        </div>
 
-            <div id="guideline-container">
-                <div id="guideline-tabs">
-                </div>
-                <div id="guideline-content-wrapper">
-                    <div id="guideline-content">
-                        <div class="welcome-message">
-                            <i class="fa-solid fa-hand-pointer"></i>
-                            <h2>Beginnen Sie, indem Sie eine Tumorentität im Menü auf der linken Seite auswählen.</h2>
-                            <p>Die Anwendung lädt dann die entsprechenden Leitlinien und zeigt die diagnostischen Empfehlungen an.</p>
-                        </div>
-                        <div id="loading-spinner" class="hidden">
-                            <div class="spinner"></div>
-                        </div>
-                         <div id="error-container" class="hidden">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                            <h2>Fehler</h2>
-                            <p id="error-message"></p>
-                        </div>
-                    </div>
+        <div class="guideline-container" id="guidelineContainer">
+            <div class="welcome-screen" id="welcomeScreen">
+                <div class="welcome-content">
+                    <i data-lucide="activity" class="welcome-icon"></i>
+                    <h2>Willkommen bei OncoGuidelines</h2>
+                    <p>Wählen Sie eine Tumorentität aus dem Menü, um die entsprechenden Leitlinien zur bildgebenden Diagnostik anzuzeigen.</p>
                 </div>
             </div>
+            <div class="timeline-container" id="timelineContainer"></div>
         </div>
     </main>
 
-    <script src="script/data.js" defer></script>
-    <script src="script/ui.js" defer></script>
-    <script src="script/main.js" defer></script>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>

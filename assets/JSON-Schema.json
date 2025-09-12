@@ -1,0 +1,363 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OncoGuidelines Schema (Revidierte Version)",
+  "description": "Ein vollständiges und detailliertes JSON-Schema zur Validierung und Beschreibung der Struktur von OncoGuidelines.json. Es deckt alle Entitäten, Subtypen, Leitlinien und Empfehlungen für die bildgebende Diagnostik in der Onkologie ab und berücksichtigt alle Feinheiten der Quelldaten.",
+  "type": "object",
+  "properties": {
+    "tumorEntities": {
+      "type": "array",
+      "title": "Liste der Tumorentitäten",
+      "description": "Die Wurzel des Dokuments, enthält eine Liste aller Tumorentitäten.",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/tumorEntity"
+      }
+    }
+  },
+  "required": [
+    "tumorEntities"
+  ],
+  "$defs": {
+    "tumorEntity": {
+      "type": "object",
+      "title": "Tumorentität",
+      "description": "Repräsentiert eine übergeordnete Tumorentität, z.B. 'Akute Lymphatische Leukämie (ALL)'.",
+      "properties": {
+        "entityName": {
+          "type": "string",
+          "description": "Der Name der Tumorentität.",
+          "examples": [
+            "Akute Lymphatische Leukämie (ALL)",
+            "Analkarzinom"
+          ]
+        },
+        "subtypes": {
+          "type": "array",
+          "description": "Eine Liste von Subtypen, die zu dieser Entität gehören. Oft enthält sie nur einen Eintrag, der den Namen der Hauptentität wiederholt.",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/subtype"
+          }
+        }
+      },
+      "required": [
+        "entityName",
+        "subtypes"
+      ]
+    },
+    "subtype": {
+      "type": "object",
+      "title": "Subtyp",
+      "description": "Repräsentiert einen spezifischen Subtyp einer Tumorentität, der eigene Leitlinien haben kann.",
+      "properties": {
+        "subtypeName": {
+          "type": "string",
+          "description": "Der Name des Subtyps.",
+          "examples": [
+            "Akute Lymphatische Leukämie (ALL)",
+            "HIV-assoziiertes DLBCL"
+          ]
+        },
+        "guidelines": {
+          "type": "array",
+          "description": "Eine Liste von Leitlinien, die für diesen Subtyp relevant sind. Kann leer sein, wenn für einen Subtyp keine Leitlinien erfasst sind.",
+          "minItems": 0,
+          "items": {
+            "$ref": "#/$defs/guideline"
+          }
+        }
+      },
+      "required": [
+        "subtypeName",
+        "guidelines"
+      ]
+    },
+    "guideline": {
+      "type": "object",
+      "title": "Leitlinie",
+      "description": "Enthält Metadaten und die Empfehlungsgruppen einer spezifischen onkologischen Leitlinie.",
+      "properties": {
+        "issuingSociety": {
+          "type": "string",
+          "description": "Die herausgebende Fachgesellschaft der Leitlinie.",
+          "enum": [
+            "DGHO",
+            "AWMF-DKG",
+            "ESMO"
+          ]
+        },
+        "guidelineTitle": {
+          "type": "string",
+          "description": "Der offizielle Titel der Leitlinie."
+        },
+        "version": {
+          "type": "string",
+          "description": "Die Version oder das Veröffentlichungsdatum der Leitlinie."
+        },
+        "sourceUrl": {
+          "type": "string",
+          "description": "Die URL zur Quelle der Leitlinie.",
+          "format": "uri"
+        },
+        "recommendationGroups": {
+          "type": "object",
+          "title": "Empfehlungsgruppen",
+          "description": "Ein Objekt, das Empfehlungen nach klinischen Phasen gruppiert. Die Schlüssel sind die Namen dieser Phasen (z.B. 'Erstdiagnose/Staging') und sind nicht fest vordefiniert. Die Werte sind immer Arrays von Empfehlungsobjekten.",
+          "patternProperties": {
+            "^.+$": {
+              "type": "array",
+              "description": "Eine Liste von Empfehlungen für eine bestimmte klinische Situation.",
+              "items": {
+                "$ref": "#/$defs/recommendation"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "issuingSociety",
+        "guidelineTitle",
+        "version",
+        "sourceUrl",
+        "recommendationGroups"
+      ]
+    },
+    "recommendation": {
+      "type": "object",
+      "title": "Empfehlung",
+      "description": "Eine einzelne, spezifische Empfehlung für eine bildgebende Untersuchung in einer definierten klinischen Situation.",
+      "properties": {
+        "recommendationId": {
+          "type": "string",
+          "description": "Ein eindeutiger Identifikator für die Empfehlung, typischerweise zusammengesetzt aus Gesellschaft, Entität und einer laufenden Nummer.",
+          "pattern": "^[A-Z0-9_.-]+$",
+          "examples": [
+            "DGHO-C91.00-001",
+            "AWMF-DKG-Analkarzinom-01",
+            "DGHO_C93.1_01"
+          ]
+        },
+        "clinicalSituation": {
+          "type": "string",
+          "description": "Die übergeordnete klinische Situation, in der die Empfehlung gilt.",
+          "enum": [
+            "Erstdiagnose/Staging",
+            "Therapiekontrolle",
+            "Nachsorge/Spätfolgen",
+            "Erstdiagnose / Staging",
+            "Therapiekontrolle/Responsebeurteilung",
+            "Nachsorge",
+            "Rezidivdiagnostik",
+            "Früherkennung/Diagnostik/Staging",
+            "Therapiekontrolle/Nachsorge",
+            "Früherkennung/Screening",
+            "Erstdiagnose",
+            "Verlaufsdiagnostik (unbehandelt)",
+            "Diagnostik vor Therapieeinleitung",
+            "Verlaufsdiagnostik (nach Behandlung)",
+            "Verdacht auf Richter-Transformation",
+            "Erstdiagnose / Staging vor Therapie",
+            "Verlaufskontrolle / Komplikationsmanagement",
+            "Weitere Diagnostik / Differentialdiagnose",
+            "Nachsorge/Verlaufskontrolle",
+            "Differenzialdiagnostik / Spezifische klinische Situationen",
+            "Rezidiv",
+            "Sondersituationen",
+            "Therapieplanung",
+            "Therapiekontrolle / Re-Staging",
+            "Verlaufskontrolle und Nachsorge",
+            "Diagnostik und Staging",
+            "Diagnose",
+            "Staging und Risikobewertung",
+            "Therapiemanagement nach Chemotherapie",
+            "Therapiemanagement",
+            "Vorsorge/Früherkennung asymptomatische Bevölkerung",
+            "Diagnostik bei inkompletter Koloskopie",
+            "Prätherapeutische Ausbreitungsdiagnostik / Staging",
+            "Nachsorge nach kurativer Resektion (UICC I-III)",
+            "Nachsorge nach kurativer Metastasentherapie",
+            "Diagnose/Staging",
+            "Überwachung (Surveillance)",
+            "Beurteilung des Therapieansprechens",
+            "Therapieplanung und -durchführung",
+            "Screening",
+            "Abklärung von Symptomen und Befunden",
+            "Prätherapeutische Ausbreitungsdiagnostik (Staging) bei gesichertem Mammakarzinom",
+            "Diagnostik und Staging bei lokoregionalem Rezidiv",
+            "Nachsorge (asymptomatische Patientin)",
+            "Primärdiagnostik",
+            "Therapiekontrolle / Re-Staging",
+            "Diagnostik bei V.a. erbliche Tumoren",
+            "Screening / Surveillance",
+            "Rezidivabklärung",
+            "Nachsorge (Watch-and-Wait)",
+            "MGUS - Risikostratifizierung/Staging",
+            "MGUS - Verlaufsbeobachtung/Nachsorge",
+            "Multiples Myelom - Erstdiagnose/Staging",
+            "Multiples Myelom - Therapiekontrolle",
+            "Multiples Myelom - Rezidivdiagnostik",
+            "Multiples Myelom - Verlaufsbeobachtung/Nachsorge",
+            "Spezifische klinische Fragestellungen",
+            "Verlaufskontrolle bei fortgeschrittener Erkrankung",
+            "Screening/Überwachung bei Hochrisikopersonen",
+            "Präoperative Planung",
+            "Restaging / Therapiekontrolle bei lokoregionärer Erkrankung",
+            "Therapiekontrolle bei fortgeschrittener/metastasierter Erkrankung",
+            "Diagnostik bei Rezidiv-/Metastasenverdacht",
+            "Initiale Diagnostik und Staging",
+            "Therapiemonitoring"
+          ]
+        },
+        "clinicalStage": {
+          "type": "string",
+          "description": "Eine detailliertere Beschreibung des klinischen Stadiums oder der spezifischen Situation innerhalb der 'clinicalSituation'.",
+          "examples": [
+            "Initialdiagnostik",
+            "Nach Konsolidationstherapie",
+            "Gesichertes Analkarzinom"
+          ]
+        },
+        "procedure": {
+          "type": "string",
+          "description": "Der Name des empfohlenen bildgebenden Verfahrens.",
+          "examples": [
+            "Röntgen-Thorax",
+            "MRT des Beckens",
+            "PET-CT"
+          ]
+        },
+        "modality": {
+          "type": "string",
+          "description": "Die spezifische bildgebende Modalität.",
+          "enum": [
+            "Röntgen",
+            "Sonographie",
+            "CT",
+            "PET-CT",
+            "MRT",
+            "Szintigraphie",
+            "PET-MRT",
+            "Mammographie",
+            "DSA",
+            "Ganzkörper-CT"
+          ]
+        },
+        "anatomicRegion": {
+          "type": "string",
+          "description": "Die anatomische Region, die untersucht werden soll."
+        },
+        "details": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Zusätzliche technische oder prozedurale Details zur Untersuchung. Kann null sein.",
+          "examples": [
+            "multiparametrisch, anguliert auf den Analkanal",
+            null
+          ]
+        },
+        "patientGroup": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Die spezifische Patientengruppe, für die diese Empfehlung gilt. Kann null sein, wenn sie für alle gilt.",
+          "examples": [
+            "Alle Patienten",
+            "Patienten mit entsprechender Symptomatik",
+            null
+          ]
+        },
+        "frequency": {
+          "type": "string",
+          "description": "Die empfohlene Häufigkeit oder der Zeitpunkt der Untersuchung."
+        },
+        "recommendationStrength": {
+          "type": "string",
+          "description": "Die Stärke der Empfehlung, ausgedrückt in standardisierten Begriffen.",
+          "enum": [
+            "Empfohlen",
+            "Kann erwogen werden",
+            "Sollte",
+            "Soll",
+            "Optional",
+            "Nicht empfohlen",
+            "Sollte nicht",
+            "Obligat",
+            "Fakultativ"
+          ]
+        },
+        "justification": {
+          "type": "string",
+          "description": "Die Begründung für die Empfehlung."
+        },
+        "recommendationGrade": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Der Empfehlungsgrad gemäß einem Klassifikationssystem (z.B. AWMF, ESMO). Kann null sein. Hinweis: Die Werte sind heterogen und mischen verschiedene Systeme (z.B. 'EK' vs. 'A' vs. 'IV, A').",
+          "enum": [
+            null,
+            "EK",
+            "A",
+            "B",
+            "C",
+            "0",
+            "D",
+            "IV, A",
+            "V, A",
+            "V, B",
+            "V, C",
+            "IV, B",
+            "IV, C",
+            "III, A",
+            "III, B",
+            "III, C",
+            "III, D",
+            "B/0"
+          ]
+        },
+        "evidenceLevel": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Das Evidenzlevel, auf dem die Empfehlung basiert. Kann null sein. Hinweis: Das Format ist sehr heterogen und kann römische Ziffern, Symbole, Zahlen oder Kombinationen enthalten.",
+          "examples": [
+            null,
+            "III",
+            "⊕⊕⊕⊕",
+            "1",
+            "1a",
+            "2++",
+            "IV",
+            "V"
+          ]
+        },
+        "sourceText": {
+          "type": "string",
+          "description": "Der exakte Quelltext aus der Leitlinie, auf dem diese strukturierte Empfehlung basiert."
+        }
+      },
+      "required": [
+        "recommendationId",
+        "clinicalSituation",
+        "clinicalStage",
+        "procedure",
+        "modality",
+        "anatomicRegion",
+        "details",
+        "patientGroup",
+        "frequency",
+        "recommendationStrength",
+        "justification",
+        "recommendationGrade",
+        "evidenceLevel",
+        "sourceText"
+      ]
+    }
+  }
+}
