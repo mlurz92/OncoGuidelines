@@ -464,18 +464,36 @@ body {
 }
 
 .recommendation-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--blur-amount));
-    border: 1px solid var(--glass-border);
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: 16px;
-    padding: 25px;
+    padding: 20px;
     position: relative;
     transition: all var(--transition-normal);
-    will-change: transform;
+    will-change: transform, box-shadow;
+    overflow: hidden;
+    border-top-width: 4px;
+}
+
+.recommendation-card.empfohlen,
+.recommendation-card.soll,
+.recommendation-card.obligat {
+    border-top-color: var(--success-color);
+}
+
+.recommendation-card.kann-erwogen-werden,
+.recommendation-card.optional,
+.recommendation-card.fakultativ {
+    border-top-color: var(--warning-color);
+}
+
+.recommendation-card.nicht-empfohlen,
+.recommendation-card.sollte-nicht {
+    border-top-color: var(--danger-color);
 }
 
 .recommendation-card:hover {
-    transform: scale(1.02);
+    transform: translateY(-5px);
     box-shadow: 0 15px 40px var(--shadow-color);
 }
 
@@ -483,17 +501,18 @@ body {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .procedure-info {
     flex: 1;
+    padding-right: 15px;
 }
 
 .procedure-name {
     font-size: 18px;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
 }
 
 .modality-badge {
@@ -507,91 +526,109 @@ body {
 }
 
 .strength-indicator {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 18px;
-    transition: all var(--transition-normal);
-    position: relative;
+    font-size: 20px;
+    flex-shrink: 0;
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
 }
 
 .strength-indicator.empfohlen,
 .strength-indicator.soll,
 .strength-indicator.obligat {
-    background: rgba(16, 185, 129, 0.2);
     color: var(--success-color);
-    animation: pulse-green 2s infinite;
-}
-
-@keyframes pulse-green {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
-    }
-    50% {
-        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
-    }
 }
 
 .strength-indicator.kann-erwogen-werden,
 .strength-indicator.optional,
 .strength-indicator.fakultativ {
-    background: rgba(245, 158, 11, 0.2);
     color: var(--warning-color);
 }
 
 .strength-indicator.nicht-empfohlen,
 .strength-indicator.sollte-nicht {
-    background: rgba(239, 68, 68, 0.2);
     color: var(--danger-color);
-    animation: pulse-red 2s infinite;
-}
-
-@keyframes pulse-red {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
-    }
-    50% {
-        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-    }
 }
 
 .recommendation-details {
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.detail-row {
-    display: flex;
-    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 15px;
+    font-size: 13px;
+    line-height: 1.5;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 15px;
 }
 
 .detail-label {
     font-weight: 500;
     color: var(--text-secondary);
-    min-width: 120px;
 }
 
 .detail-value {
-    flex: 1;
     color: var(--text-primary);
+}
+
+.justification-container {
+    margin-top: 15px;
+}
+
+.justification-toggle {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--info-color);
+    user-select: none;
+    background: none;
+    border: none;
+    padding: 0;
+    width: 100%;
+    text-align: left;
+}
+
+.justification-toggle i {
+    width: 16px;
+    height: 16px;
+    margin-left: 5px;
+    transition: transform var(--transition-fast);
+}
+
+.justification-container.expanded .justification-toggle i {
+    transform: rotate(180deg);
+}
+
+.justification-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-normal) ease-out;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.justification-content p {
+    padding-top: 10px;
 }
 
 .evidence-badges {
     display: flex;
-    gap: 10px;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .evidence-badge {
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
     font-weight: 500;
     background: var(--secondary-bg);
     border: 1px solid var(--border-color);

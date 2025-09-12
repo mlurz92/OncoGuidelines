@@ -246,6 +246,7 @@ class OncoGuidelinesApp {
             const phaseElement = this.createPhaseElement(situation, recommendations);
             this.elements.timelineContainer.appendChild(phaseElement);
         });
+        lucide.createIcons();
     }
 
     groupRecommendationsByClinicalSituation(recommendationGroups) {
@@ -285,10 +286,10 @@ class OncoGuidelinesApp {
     }
 
     createRecommendationCard(recommendation) {
-        const card = document.createElement('div');
-        card.className = 'recommendation-card';
-        
         const strengthClass = this.getStrengthClass(recommendation.recommendationStrength);
+        const card = document.createElement('div');
+        card.className = `recommendation-card ${strengthClass}`;
+        
         const strengthIcon = this.getStrengthIcon(recommendation.recommendationStrength);
         
         card.innerHTML = `
@@ -302,33 +303,32 @@ class OncoGuidelinesApp {
                 </div>
             </div>
             <div class="recommendation-details">
-                <div class="detail-row">
-                    <span class="detail-label">Region:</span>
-                    <span class="detail-value">${recommendation.anatomicRegion}</span>
-                </div>
+                <span class="detail-label">Region:</span>
+                <span class="detail-value">${recommendation.anatomicRegion}</span>
+                
                 ${recommendation.details ? `
-                    <div class="detail-row">
-                        <span class="detail-label">Details:</span>
-                        <span class="detail-value">${recommendation.details}</span>
-                    </div>
+                    <span class="detail-label">Details:</span>
+                    <span class="detail-value">${recommendation.details}</span>
                 ` : ''}
-                <div class="detail-row">
-                    <span class="detail-label">Stadium:</span>
-                    <span class="detail-value">${recommendation.clinicalStage}</span>
-                </div>
+
+                <span class="detail-label">Stadium:</span>
+                <span class="detail-value">${recommendation.clinicalStage}</span>
+
                 ${recommendation.patientGroup ? `
-                    <div class="detail-row">
-                        <span class="detail-label">Patientengruppe:</span>
-                        <span class="detail-value">${recommendation.patientGroup}</span>
-                    </div>
+                    <span class="detail-label">Patientengruppe:</span>
+                    <span class="detail-value">${recommendation.patientGroup}</span>
                 ` : ''}
-                <div class="detail-row">
-                    <span class="detail-label">Häufigkeit:</span>
-                    <span class="detail-value">${recommendation.frequency}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Begründung:</span>
-                    <span class="detail-value">${recommendation.justification}</span>
+
+                <span class="detail-label">Häufigkeit:</span>
+                <span class="detail-value">${recommendation.frequency}</span>
+            </div>
+            <div class="justification-container">
+                <button class="justification-toggle">
+                    Begründung anzeigen
+                    <i data-lucide="chevron-down"></i>
+                </button>
+                <div class="justification-content">
+                    <p>${recommendation.justification}</p>
                 </div>
             </div>
             <div class="evidence-badges">
@@ -340,6 +340,21 @@ class OncoGuidelinesApp {
                 ` : ''}
             </div>
         `;
+
+        const toggle = card.querySelector('.justification-toggle');
+        const content = card.querySelector('.justification-content');
+        const container = card.querySelector('.justification-container');
+
+        toggle.addEventListener('click', () => {
+            const isExpanded = container.classList.toggle('expanded');
+            if (isExpanded) {
+                content.style.maxHeight = content.scrollHeight + 'px';
+                toggle.childNodes[0].nodeValue = "Begründung ausblenden ";
+            } else {
+                content.style.maxHeight = null;
+                toggle.childNodes[0].nodeValue = "Begründung anzeigen ";
+            }
+        });
         
         return card;
     }
