@@ -1,14 +1,30 @@
-<!--?xml version="1.0" encoding="UTF-8"?-->
-<svg id="logoIcon" viewBox="0 0 246 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="titleH descH" class="w-full max-w-md" style="">
-              <title id="titleH">Diagnostischer Pfad â€“ Icon (horizontal)</title>
-              <desc id="descH">Abstrakter Pfad mit vier vernetzten Knotenpunkten, radiologische Bögen, Kreise in hellem Grau.</desc>
-              <g stroke-linecap="round" stroke-linejoin="round">
-                <path fill="none" stroke="#444" stroke-width="6" d="M30,85L95,60L165,92L225,55" class="QNsytJhA_0"></path>
-                <path class="node QNsytJhA_1" fill="#e3000b" stroke="#fff" stroke-width="3" d="M15,85A15,15 0,1,1 45,85A15,15 0,1,1 15,85"></path>
-                <path class="node QNsytJhA_2" fill="#e3000b" stroke="#fff" stroke-width="3" d="M80,60A15,15 0,1,1 110,60A15,15 0,1,1 80,60"></path>
-                <path class="node QNsytJhA_3" fill="#e3000b" stroke="#fff" stroke-width="3" d="M150,92A15,15 0,1,1 180,92A15,15 0,1,1 150,92"></path>
-                <path class="node QNsytJhA_4" fill="#e3000b" stroke="#fff" stroke-width="3" d="M210,55A15,15 0,1,1 240,55A15,15 0,1,1 210,55"></path>
-                <path d="M80,45 a20,20 0 0,1 30,0" fill="none" stroke="#444" stroke-width="3" opacity="0.8" class="QNsytJhA_5"></path>
-                <path d="M210,40 a20,20 0 0,1 30,0" fill="none" stroke="#444" stroke-width="2" opacity="0.5" class="QNsytJhA_6"></path>
-              </g>
-            <style data-made-with="vivus-instant">.QNsytJhA_0{stroke-dasharray:218 220;stroke-dashoffset:219;animation:QNsytJhA_draw 2000ms ease 0ms forwards;}.QNsytJhA_1{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 166ms forwards;}.QNsytJhA_2{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 333ms forwards;}.QNsytJhA_3{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 500ms forwards;}.QNsytJhA_4{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 666ms forwards;}.QNsytJhA_5{stroke-dasharray:34 36;stroke-dashoffset:35;animation:QNsytJhA_draw 2000ms ease 833ms forwards;}.QNsytJhA_6{stroke-dasharray:34 36;stroke-dashoffset:35;animation:QNsytJhA_draw 2000ms ease 1000ms forwards;}@keyframes QNsytJhA_draw{100%{stroke-dashoffset:0;}}@keyframes QNsytJhA_fade{0%{stroke-opacity:1;}92.5925925925926%{stroke-opacity:1;}100%{stroke-opacity:0;}}</style></svg>
+<svg id="logoIcon" viewBox="0 0 246 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="titleH descH" class="w-full max-w-md">
+    <title id="titleH">Diagnostischer Pfad – Icon (horizontal)</title>
+    <desc id="descH">Abstrakter Pfad mit vier leuchtenden, vernetzten Glasknotenpunkten und dezenten radiologischen Bögen.</desc>
+    <defs>
+        <radialGradient id="glassOrbGradientHorizontal" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+            <stop offset="0%" style="stop-color:rgba(255, 100, 100, 0.9)"/>
+            <stop offset="60%" style="stop-color:rgba(227, 0, 11, 0.85)"/>
+            <stop offset="100%" style="stop-color:rgba(150, 0, 11, 0.9)"/>
+        </radialGradient>
+    </defs>
+    <g stroke-linecap="round" stroke-linejoin="round">
+        <path fill="none" stroke="#6b7280" stroke-opacity="0.8" stroke-width="6" d="M30,85L95,60L165,92L225,55" class="QNsytJhA_0"></path>
+        <path class="node QNsytJhA_1" fill="url(#glassOrbGradientHorizontal)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1.5" d="M15,85A15,15 0,1,1 45,85A15,15 0,1,1 15,85"></path>
+        <path class="node QNsytJhA_2" fill="url(#glassOrbGradientHorizontal)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1.5" d="M80,60A15,15 0,1,1 110,60A15,15 0,1,1 80,60"></path>
+        <path class="node QNsytJhA_3" fill="url(#glassOrbGradientHorizontal)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1.5" d="M150,92A15,15 0,1,1 180,92A15,15 0,1,1 150,92"></path>
+        <path class="node QNsytJhA_4" fill="url(#glassOrbGradientHorizontal)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1.5" d="M210,55A15,15 0,1,1 240,55A15,15 0,1,1 210,55"></path>
+        <path d="M80,45 a20,20 0 0,1 30,0" fill="none" stroke="#6b7280" stroke-width="3" opacity="0.6" class="QNsytJhA_5"></path>
+        <path d="M210,40 a20,20 0 0,1 30,0" fill="none" stroke="#6b7280" stroke-width="2" opacity="0.4" class="QNsytJhA_6"></path>
+    </g>
+    <style data-made-with="vivus-instant">
+        .QNsytJhA_0{stroke-dasharray:218 220;stroke-dashoffset:219;animation:QNsytJhA_draw 2000ms ease 0ms forwards;}
+        .QNsytJhA_1{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 166ms forwards;}
+        .QNsytJhA_2{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 333ms forwards;}
+        .QNsytJhA_3{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 500ms forwards;}
+        .QNsytJhA_4{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 666ms forwards;}
+        .QNsytJhA_5{stroke-dasharray:34 36;stroke-dashoffset:35;animation:QNsytJhA_draw 2000ms ease 833ms forwards;}
+        .QNsytJhA_6{stroke-dasharray:34 36;stroke-dashoffset:35;animation:QNsytJhA_draw 2000ms ease 1000ms forwards;}
+        @keyframes QNsytJhA_draw{100%{stroke-dashoffset:0;}}
+    </style>
+</svg>
