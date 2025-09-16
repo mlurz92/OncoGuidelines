@@ -547,11 +547,13 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-width: 0;
 }
 
 .procedure-name {
     font-size: 18px;
     font-weight: 600;
+    word-break: break-word;
 }
 
 .recommendation-meta {
@@ -713,6 +715,7 @@ body {
 
 .detail-value {
     color: var(--text-primary);
+    word-break: break-word;
 }
 
 .justification-container,
@@ -1186,8 +1189,7 @@ body {
     .path-modal-content {
         padding: 0;
         overflow: visible;
-        column-count: 2;
-        column-gap: 20px;
+        column-count: 1;
     }
     
     .path-print-header {
