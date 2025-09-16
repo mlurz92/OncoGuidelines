@@ -3,6 +3,7 @@ let currentEntity = null;
 let currentSubtype = null;
 let currentGuideline = null;
 let searchTerm = '';
+let patientPath = [];
 
 class OncoGuidelinesApp {
     constructor() {
@@ -22,9 +23,22 @@ class OncoGuidelinesApp {
             entitySubtitle: document.getElementById('entitySubtitle'),
             societyTabs: document.getElementById('societyTabs'),
             guidelineContainer: document.getElementById('guidelineContainer'),
+            mainContainer: document.querySelector('.main-container'),
             welcomeScreen: document.getElementById('welcomeScreen'),
             timelineContainer: document.getElementById('timelineContainer'),
-            loadingOverlay: document.getElementById('loadingOverlay')
+            loadingOverlay: document.getElementById('loadingOverlay'),
+            patientPathFab: document.getElementById('patientPathFab'),
+            pathCount: document.getElementById('pathCount'),
+            pathModalOverlay: document.getElementById('pathModalOverlay'),
+            pathModal: document.getElementById('pathModal'),
+            pathModalClose: document.getElementById('pathModalClose'),
+            pathModalContent: document.getElementById('pathModalContent'),
+            pathPrintHeader: document.getElementById('pathPrintHeader'),
+            emptyPathMessage: document.getElementById('emptyPathMessage'),
+            printPathBtn: document.getElementById('printPathBtn'),
+            exportPathBtn: document.getElementById('exportPathBtn'),
+            clearPathBtn: document.getElementById('clearPathBtn'),
+            mobileNavToggle: document.getElementById('mobileNavToggle')
         };
     }
 
@@ -32,6 +46,22 @@ class OncoGuidelinesApp {
         this.elements.themeToggle.addEventListener('click', () => this.toggleTheme());
         this.elements.searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
         document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
+        this.elements.patientPathFab.addEventListener('click', () => this.openPathModal());
+        this.elements.pathModalOverlay.addEventListener('click', (e) => {
+            if (e.target === this.elements.pathModalOverlay) {
+                this.closePathModal();
+            }
+        });
+        this.elements.pathModalClose.addEventListener('click', () => this.closePathModal());
+        this.elements.printPathBtn.addEventListener('click', () => this.printPath());
+        this.elements.exportPathBtn.addEventListener('click', () => this.exportPathAsTxt());
+        this.elements.clearPathBtn.addEventListener('click', () => this.clearPath());
+        this.elements.mobileNavToggle.addEventListener('click', () => this.toggleMobileNav());
+        this.elements.mainContainer.addEventListener('click', (e) => {
+            if (this.elements.sidebar.classList.contains('open') && e.target === this.elements.mainContainer) {
+                this.toggleMobileNav(false);
+            }
+        });
     }
 
     initializeLucideIcons() {
@@ -42,6 +72,19 @@ class OncoGuidelinesApp {
         const body = document.body;
         body.classList.toggle('light-mode');
         body.classList.toggle('dark-mode');
+    }
+
+    toggleMobileNav(forceState) {
+        const isOpen = this.elements.sidebar.classList.contains('open');
+        const shouldOpen = forceState !== undefined ? forceState : !isOpen;
+        
+        if (shouldOpen) {
+            this.elements.sidebar.classList.add('open');
+            this.elements.mainContainer.classList.add('sidebar-open');
+        } else {
+            this.elements.sidebar.classList.remove('open');
+            this.elements.mainContainer.classList.remove('sidebar-open');
+        }
     }
 
     async loadData() {
@@ -171,6 +214,7 @@ class OncoGuidelinesApp {
             if (entity.subtypes.length > 0 && entity.subtypes[0].guidelines.length > 0) {
                 this.loadEntityGuidelines(entity, entity.subtypes[0]);
             }
+            this.toggleMobileNav(false);
         }
     }
 
@@ -183,6 +227,7 @@ class OncoGuidelinesApp {
         subtypeDiv.closest('.entity-item').classList.add('has-active-child');
         
         this.loadEntityGuidelines(entity, subtype);
+        this.toggleMobileNav(false);
     }
 
     loadEntityGuidelines(entity, subtype) {
@@ -200,6 +245,7 @@ class OncoGuidelinesApp {
             this.showNoGuidelines();
         }
         
+        this.elements.mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
         this.elements.welcomeScreen.classList.add('hidden');
         this.elements.timelineContainer.classList.add('active');
     }
@@ -291,6 +337,7 @@ class OncoGuidelinesApp {
         card.className = `recommendation-card ${strengthClass}`;
         
         const strengthIcon = this.getStrengthIcon(recommendation.recommendationStrength);
+        const isInPath = patientPath.some(item => item.recommendationId === recommendation.recommendationId);
         
         card.innerHTML = `
             <div class="recommendation-header">
@@ -298,8 +345,13 @@ class OncoGuidelinesApp {
                     <h4 class="procedure-name">${recommendation.procedure}</h4>
                     <span class="modality-badge">${recommendation.modality}</span>
                 </div>
-                <div class="strength-indicator ${strengthClass}">
-                    ${strengthIcon}
+                <div class="recommendation-header-actions">
+                    <div class="strength-indicator ${strengthClass}">
+                        ${strengthIcon}
+                    </div>
+                    <button class="add-to-path-btn ${isInPath ? 'added' : ''}" data-id="${recommendation.recommendationId}">
+                        <i data-lucide="${isInPath ? 'check' : 'plus'}"></i>
+                    </button>
                 </div>
             </div>
             <div class="recommendation-details">
@@ -355,6 +407,9 @@ class OncoGuidelinesApp {
                 toggle.childNodes[0].nodeValue = "Begründung anzeigen ";
             }
         });
+
+        const addToPathBtn = card.querySelector('.add-to-path-btn');
+        addToPathBtn.addEventListener('click', () => this.togglePathItem(recommendation, addToPathBtn));
         
         return card;
     }
@@ -411,6 +466,171 @@ class OncoGuidelinesApp {
                 this.toggleTheme();
             }
         }
+    }
+
+    togglePathItem(recommendation, button) {
+        const index = patientPath.findIndex(item => item.recommendationId === recommendation.recommendationId);
+        if (index > -1) {
+            patientPath.splice(index, 1);
+            if (button) {
+                button.classList.remove('added');
+                button.innerHTML = '<i data-lucide="plus"></i>';
+            }
+        } else {
+            patientPath.push(recommendation);
+            if (button) {
+                button.classList.add('added');
+                button.innerHTML = '<i data-lucide="check"></i>';
+            }
+        }
+        if (button) {
+            lucide.createIcons({
+                nodes: [button]
+            });
+        }
+        this.updatePathFab();
+    }
+
+    updatePathFab() {
+        const count = patientPath.length;
+        this.elements.pathCount.textContent = count;
+        if (count > 0) {
+            this.elements.patientPathFab.classList.add('visible');
+        } else {
+            this.elements.patientPathFab.classList.remove('visible');
+        }
+    }
+
+    openPathModal() {
+        this.renderPathModalContent();
+        this.elements.pathModalOverlay.classList.add('visible');
+        lucide.createIcons();
+    }
+
+    closePathModal() {
+        this.elements.pathModalOverlay.classList.remove('visible');
+    }
+
+    renderPathModalContent() {
+        const contentContainer = this.elements.pathModalContent;
+        const emptyMessage = contentContainer.querySelector('.empty-path-message');
+        
+        contentContainer.querySelectorAll('.path-item').forEach(item => item.remove());
+
+        if (patientPath.length === 0) {
+            emptyMessage.style.display = 'flex';
+        } else {
+            emptyMessage.style.display = 'none';
+            patientPath.forEach(rec => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'path-item';
+                itemElement.innerHTML = `
+                    <div class="path-item-details">
+                        <div class="path-item-header">
+                            <h3 class="path-item-procedure">${rec.procedure}</h3>
+                            <span class="modality-badge">${rec.modality}</span>
+                        </div>
+                        <p class="path-item-info">
+                            <strong>Situation:</strong> ${rec.clinicalSituation} <br>
+                            <strong>Stadium:</strong> ${rec.clinicalStage} <br>
+                            <strong>Region:</strong> ${rec.anatomicRegion}
+                        </p>
+                    </div>
+                    <button class="path-item-remove-btn" data-id="${rec.recommendationId}">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                `;
+                itemElement.querySelector('.path-item-remove-btn').addEventListener('click', () => {
+                    this.togglePathItem(rec, null);
+                    this.renderPathModalContent();
+                    this.updateCardsInView();
+                });
+                contentContainer.appendChild(itemElement);
+            });
+            lucide.createIcons({
+                nodes: Array.from(contentContainer.querySelectorAll('.path-item-remove-btn'))
+            });
+        }
+    }
+
+    updateCardsInView() {
+        const allCardButtons = document.querySelectorAll('.add-to-path-btn');
+        allCardButtons.forEach(button => {
+            const id = button.dataset.id;
+            const isInPath = patientPath.some(item => item.recommendationId === id);
+            if (isInPath) {
+                if (!button.classList.contains('added')) {
+                    button.classList.add('added');
+                    button.innerHTML = '<i data-lucide="check"></i>';
+                    lucide.createIcons({ nodes: [button] });
+                }
+            } else {
+                if (button.classList.contains('added')) {
+                    button.classList.remove('added');
+                    button.innerHTML = '<i data-lucide="plus"></i>';
+                    lucide.createIcons({ nodes: [button] });
+                }
+            }
+        });
+    }
+
+    clearPath() {
+        patientPath = [];
+        this.updatePathFab();
+        this.renderPathModalContent();
+        this.updateCardsInView();
+    }
+
+    printPath() {
+        if (currentEntity && currentGuideline) {
+            this.elements.pathPrintHeader.innerHTML = `
+                <h1>Diagnostischer Pfad: ${currentEntity.entityName}</h1>
+                <p>Basierend auf Leitlinie: ${currentGuideline.guidelineTitle} (${currentGuideline.issuingSociety}, Version: ${currentGuideline.version})</p>
+            `;
+        } else {
+            this.elements.pathPrintHeader.innerHTML = `<h1>Diagnostischer Pfad</h1>`;
+        }
+        window.print();
+        this.elements.pathPrintHeader.innerHTML = '';
+    }
+
+    exportPathAsTxt() {
+        if (patientPath.length === 0) return;
+
+        let content = "Diagnostischer Pfad - OncoGuidelines\n";
+        content += "========================================\n\n";
+
+        if (currentEntity && currentGuideline) {
+            content += `Tumorentität: ${currentEntity.entityName}\n`;
+            if (currentSubtype.subtypeName !== currentEntity.entityName) {
+                content += `Subtyp: ${currentSubtype.subtypeName}\n`;
+            }
+            content += `Leitlinie: ${currentGuideline.guidelineTitle} (${currentGuideline.issuingSociety}, ${currentGuideline.version})\n\n`;
+        }
+
+        content += "Checkliste der empfohlenen Maßnahmen:\n\n";
+
+        patientPath.forEach(rec => {
+            content += `[ ] ${rec.procedure} (${rec.modality})\n`;
+            content += `    - Klinische Situation: ${rec.clinicalSituation}\n`;
+            content += `    - Stadium / Kontext: ${rec.clinicalStage}\n`;
+            content += `    - Anatomische Region: ${rec.anatomicRegion}\n`;
+            if (rec.details) {
+                content += `    - Details: ${rec.details}\n`;
+            }
+            content += "\n";
+        });
+
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const entityName = currentEntity ? currentEntity.entityName.replace(/[^a-z0-9]/gi, '_') : 'Export';
+        a.download = `OncoGuidelines_Pfad_${entityName}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 }
 

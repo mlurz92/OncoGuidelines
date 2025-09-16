@@ -1,0 +1,333 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OncoGuidelines Schema (Revised)",
+  "description": "Ein detailliertes und revidiertes Schema zur Validierung von JSON-Dateien, die onkologische Bildgebungsleitlinien enthalten. Es deckt die gesamte Struktur von Tumorentitäten über Subtypen und Leitlinien bis hin zu spezifischen Empfehlungen ab und nutzt strenge Enums für maximale Datenintegrität.",
+  "type": "object",
+  "properties": {
+    "tumorEntities": {
+      "description": "Eine Liste von Tumorentitäten, die jeweils spezifische Subtypen und Leitlinien enthalten.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tumorEntity"
+      }
+    }
+  },
+  "required": [
+    "tumorEntities"
+  ],
+  "$defs": {
+    "tumorEntity": {
+      "type": "object",
+      "description": "Repräsentiert eine übergeordnete Tumorentität, z.B. 'Akute Lymphatische Leukämie (ALL)'.",
+      "properties": {
+        "entityName": {
+          "type": "string",
+          "description": "Der Name der Tumorentität.",
+          "examples": [
+            "Akute Lymphatische Leukämie (ALL)",
+            "Analkarzinom"
+          ]
+        },
+        "subtypes": {
+          "type": "array",
+          "description": "Eine Liste von Subtypen, die zu dieser Entität gehören.",
+          "items": {
+            "$ref": "#/$defs/subtype"
+          }
+        }
+      },
+      "required": [
+        "entityName",
+        "subtypes"
+      ]
+    },
+    "subtype": {
+      "type": "object",
+      "description": "Repräsentiert einen spezifischen Subtyp einer Tumorentität.",
+      "properties": {
+        "subtypeName": {
+          "type": "string",
+          "description": "Der Name des Subtyps.",
+          "examples": [
+            "Akute Lymphatische Leukämie (ALL)",
+            "Diffuses großzelliges B-Zell-Lymphom (DLBCL)"
+          ]
+        },
+        "guidelines": {
+          "type": "array",
+          "description": "Eine Liste von Leitlinien, die für diesen Subtyp relevant sind.",
+          "items": {
+            "$ref": "#/$defs/guideline"
+          }
+        }
+      },
+      "required": [
+        "subtypeName",
+        "guidelines"
+      ]
+    },
+    "guideline": {
+      "type": "object",
+      "description": "Repräsentiert eine spezifische Leitlinie einer herausgebenden Gesellschaft.",
+      "properties": {
+        "issuingSociety": {
+          "type": "string",
+          "description": "Die Gesellschaft oder Organisation, die die Leitlinie herausgibt.",
+          "examples": [
+            "DGHO",
+            "AWMF-DKG",
+            "ESMO"
+          ]
+        },
+        "guidelineTitle": {
+          "type": "string",
+          "description": "Der offizielle Titel der Leitlinie.",
+          "examples": [
+            "Akute Lymphatische Leukämie (ALL)",
+            "S3-Leitlinie Analkarzinom (Diagnostik, Therapie und Nachsorge von Analkanal- und Analrandkarzinomen)"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "description": "Die Version oder das Datum der Veröffentlichung der Leitlinie.",
+          "examples": [
+            "Mai 2022",
+            "Langversion 1.0 – Oktober 2020"
+          ]
+        },
+        "sourceUrl": {
+          "type": "string",
+          "description": "Die URL zur Quelle der Leitlinie.",
+          "format": "uri",
+          "examples": [
+            "https://www.onkopedia.com",
+            "https://www.leitlinienprogramm-onkologie.de/leitlinien/analkarzinom/"
+          ]
+        },
+        "recommendationGroups": {
+          "type": "object",
+          "description": "Eine Sammlung von Empfehlungsgruppen, die nach klinischen Situationen (z.B. 'Erstdiagnose/Staging', 'Nachsorge') gegliedert sind. Die Schlüssel sind die Namen der Gruppen.",
+          "additionalProperties": {
+            "type": "array",
+            "description": "Eine Liste von Empfehlungen für eine bestimmte klinische Situation.",
+            "items": {
+              "$ref": "#/$defs/recommendation"
+            }
+          }
+        }
+      },
+      "required": [
+        "issuingSociety",
+        "guidelineTitle",
+        "version",
+        "sourceUrl",
+        "recommendationGroups"
+      ]
+    },
+    "recommendation": {
+      "type": "object",
+      "description": "Eine einzelne, spezifische Empfehlung für eine bildgebende Untersuchung.",
+      "properties": {
+        "recommendationId": {
+          "type": "string",
+          "description": "Ein eindeutiger Identifikator für die Empfehlung.",
+          "examples": [
+            "DGHO-C91.00-001",
+            "AWMF-DKG-Analkarzinom-01"
+          ]
+        },
+        "clinicalSituation": {
+          "type": "string",
+          "description": "Die übergeordnete klinische Situation, in der die Empfehlung gilt (z.B. Staging, Therapiekontrolle).",
+          "examples": [
+            "Erstdiagnose/Staging",
+            "Therapiekontrolle",
+            "Nachsorge/Spätfolgen"
+          ]
+        },
+        "clinicalStage": {
+          "type": "string",
+          "description": "Das spezifische klinische Stadium oder der Kontext, für den die Empfehlung gilt.",
+          "examples": [
+            "Initialdiagnostik",
+            "Nach Konsolidationstherapie",
+            "Gesichertes Analkarzinom"
+          ]
+        },
+        "procedure": {
+          "type": "string",
+          "description": "Die Bezeichnung des empfohlenen bildgebenden Verfahrens.",
+          "examples": [
+            "Röntgen-Thorax",
+            "MRT des Beckens",
+            "PET-CT"
+          ]
+        },
+        "modality": {
+          "type": "string",
+          "description": "Die spezifische bildgebende Modalität.",
+          "enum": [
+            "Röntgen",
+            "Sonographie",
+            "CT",
+            "MRT",
+            "PET-CT",
+            "PET-MRT",
+            "Szintigraphie",
+            "Mammographie",
+            "DSA",
+            "Ganzkörper-CT"
+          ]
+        },
+        "anatomicRegion": {
+          "type": "string",
+          "description": "Die anatomische Region, die untersucht werden soll.",
+          "examples": [
+            "Thorax",
+            "Abdomen",
+            "Ganzkörper",
+            "Becken"
+          ]
+        },
+        "details": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Zusätzliche Details oder Spezifikationen zum Verfahren (kann null sein).",
+          "examples": [
+            "multiparametrisch, anguliert auf den Analkanal",
+            "kontrastmittelverstärkt",
+            null
+          ]
+        },
+        "patientGroup": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Die spezifische Patientengruppe, für die die Empfehlung gilt (kann null sein, wenn für alle gilt).",
+          "examples": [
+            "Alle Patienten",
+            "Patienten mit entsprechender Symptomatik",
+            null
+          ]
+        },
+        "frequency": {
+          "type": "string",
+          "description": "Die empfohlene Häufigkeit der Untersuchung.",
+          "examples": [
+            "Einmalig",
+            "Bei Bedarf",
+            "Jährlich bei 12, 24 und 36 Monaten"
+          ]
+        },
+        "recommendationStrength": {
+          "type": "string",
+          "description": "Die Stärke der Empfehlung, ausgedrückt durch modale Verben oder standardisierte Begriffe.",
+          "enum": [
+            "Empfohlen",
+            "Kann erwogen werden",
+            "Sollte",
+            "Soll",
+            "Optional",
+            "Nicht empfohlen",
+            "Sollte nicht",
+            "Obligat",
+            "Fakultativ"
+          ]
+        },
+        "justification": {
+          "type": "string",
+          "description": "Die Begründung für die Empfehlung.",
+          "examples": [
+            "Staging zur Erfassung eines möglichen Mediastinaltumors oder anderer thorakaler Manifestationen als Teil der minimalen Diagnostik."
+          ]
+        },
+        "recommendationGrade": {
+          "description": "Der Empfehlungsgrad gemäß einem Klassifikationssystem (z.B. AWMF, ESMO) (kann null sein).",
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            null,
+            "EK",
+            "A",
+            "B",
+            "C",
+            "D",
+            "0",
+            "B/0",
+            "IV, A",
+            "V, B",
+            "V, C",
+            "V, A"
+          ]
+        },
+        "evidenceLevel": {
+          "description": "Das Evidenzlevel, auf dem die Empfehlung basiert (kann null sein).",
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            null,
+            "III",
+            "IV",
+            "II",
+            "1",
+            "⊕⊕⊕⊕",
+            "⊕⊕⊝⊝",
+            "⊕⊕⊕⊝",
+            "⊕⊝⊝⊝",
+            "⊕⊕⊝⊝ low",
+            "⊕⊝⊝⊝ very low",
+            "2",
+            "3",
+            "4",
+            "5",
+            "1a",
+            "1b",
+            "2a",
+            "2b",
+            "3b",
+            "2+",
+            "2++",
+            "1-",
+            "2-",
+            "1+",
+            "3a",
+            "I",
+            "V",
+            "[1]",
+            "[23]"
+          ]
+        },
+        "sourceText": {
+          "type": "string",
+          "description": "Der exakte Quelltext aus der Leitlinie, auf dem die Empfehlung basiert.",
+          "examples": [
+            "Bildgebende Untersuchungen (minimal Röntgenbild des Thorax, abdominelle Sonographie, ggf. Computertomographie von Thorax und Abdomen oder weitere Untersuchungen nach Symptomatik)"
+          ]
+        }
+      },
+      "required": [
+        "recommendationId",
+        "clinicalSituation",
+        "clinicalStage",
+        "procedure",
+        "modality",
+        "anatomicRegion",
+        "details",
+        "patientGroup",
+        "frequency",
+        "recommendationStrength",
+        "justification",
+        "recommendationGrade",
+        "evidenceLevel",
+        "sourceText"
+      ]
+    }
+  }
+}
