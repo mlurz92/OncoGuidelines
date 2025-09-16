@@ -509,6 +509,7 @@ body {
     display: flex;
     flex-direction: column;
     height: 480px;
+    container-type: inline-size;
 }
 
 .recommendation-card.empfohlen,
@@ -708,6 +709,10 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
+.detail-item {
+    display: contents;
+}
+
 .detail-label {
     font-weight: 500;
     color: var(--text-secondary);
@@ -716,6 +721,21 @@ body {
 .detail-value {
     color: var(--text-primary);
     word-break: break-word;
+}
+
+@container (max-width: 340px) {
+    .recommendation-details {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .detail-item {
+        display: block;
+    }
+    .detail-label {
+        font-size: 12px;
+        margin-bottom: 2px;
+    }
 }
 
 .justification-container,

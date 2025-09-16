@@ -337,7 +337,7 @@ class PatientenpfadeApp {
         card.className = `recommendation-card ${strengthClass}`;
         
         const strengthIcon = this.getStrengthIcon(recommendation.recommendationStrength);
-        const isInPath = patientPath.some(item => item.recommendationId === recommendation.recommendationId);
+        const isInPath = patientPath.some(item => item.recommendation.recommendationId === recommendation.recommendationId);
         
         card.innerHTML = `
             <div class="recommendation-header">
@@ -361,24 +361,30 @@ class PatientenpfadeApp {
             </div>
             <div class="recommendation-body">
                 <div class="recommendation-details">
-                    <span class="detail-label">Region:</span>
-                    <span class="detail-value">${recommendation.anatomicRegion}</span>
-                    
+                    <div class="detail-item">
+                        <span class="detail-label">Region:</span>
+                        <span class="detail-value">${recommendation.anatomicRegion}</span>
+                    </div>
                     ${recommendation.details ? `
-                        <span class="detail-label">Details:</span>
-                        <span class="detail-value">${recommendation.details}</span>
+                        <div class="detail-item">
+                            <span class="detail-label">Details:</span>
+                            <span class="detail-value">${recommendation.details}</span>
+                        </div>
                     ` : ''}
-
-                    <span class="detail-label">Stadium:</span>
-                    <span class="detail-value">${recommendation.clinicalStage}</span>
-
+                    <div class="detail-item">
+                        <span class="detail-label">Stadium:</span>
+                        <span class="detail-value">${recommendation.clinicalStage}</span>
+                    </div>
                     ${recommendation.patientGroup ? `
-                        <span class="detail-label">Patientengruppe:</span>
-                        <span class="detail-value">${recommendation.patientGroup}</span>
+                        <div class="detail-item">
+                            <span class="detail-label">Patientengruppe:</span>
+                            <span class="detail-value">${recommendation.patientGroup}</span>
+                        </div>
                     ` : ''}
-
-                    <span class="detail-label">Häufigkeit:</span>
-                    <span class="detail-value">${recommendation.frequency}</span>
+                    <div class="detail-item">
+                        <span class="detail-label">Häufigkeit:</span>
+                        <span class="detail-value">${recommendation.frequency}</span>
+                    </div>
                 </div>
                 <div class="justification-container">
                     <button class="justification-toggle">
@@ -495,7 +501,7 @@ class PatientenpfadeApp {
     }
 
     togglePathItem(recommendation, button) {
-        const index = patientPath.findIndex(item => item.recommendationId === recommendation.recommendationId);
+        const index = patientPath.findIndex(item => item.recommendation.recommendationId === recommendation.recommendationId);
         if (index > -1) {
             patientPath.splice(index, 1);
             if (button) {
@@ -503,7 +509,17 @@ class PatientenpfadeApp {
                 button.innerHTML = '<i data-lucide="plus"></i>';
             }
         } else {
-            patientPath.push(recommendation);
+            const pathItem = {
+                recommendation: recommendation,
+                context: {
+                    entityName: currentEntity.entityName,
+                    subtypeName: currentSubtype.subtypeName,
+                    guidelineTitle: currentGuideline.guidelineTitle,
+                    issuingSociety: currentGuideline.issuingSociety,
+                    version: currentGuideline.version
+                }
+            };
+            patientPath.push(pathItem);
             if (button) {
                 button.classList.add('added');
                 button.innerHTML = '<i data-lucide="check"></i>';
@@ -547,7 +563,8 @@ class PatientenpfadeApp {
             emptyMessage.style.display = 'flex';
         } else {
             emptyMessage.style.display = 'none';
-            patientPath.forEach(rec => {
+            patientPath.forEach(item => {
+                const rec = item.recommendation;
                 const itemElement = document.createElement('div');
                 itemElement.className = 'path-item';
                 itemElement.innerHTML = `
@@ -583,7 +600,7 @@ class PatientenpfadeApp {
         const allCardButtons = document.querySelectorAll('.add-to-path-btn');
         allCardButtons.forEach(button => {
             const id = button.dataset.id;
-            const isInPath = patientPath.some(item => item.recommendationId === id);
+            const isInPath = patientPath.some(item => item.recommendation.recommendationId === id);
             if (isInPath) {
                 if (!button.classList.contains('added')) {
                     button.classList.add('added');
@@ -608,10 +625,11 @@ class PatientenpfadeApp {
     }
 
     printPath() {
-        if (currentEntity && currentGuideline) {
+        if (patientPath.length > 0) {
+            const firstItemContext = patientPath[0].context;
             this.elements.pathPrintHeader.innerHTML = `
-                <h1>Diagnostischer Pfad: ${currentEntity.entityName}</h1>
-                <p>Basierend auf Leitlinie: ${currentGuideline.guidelineTitle} (${currentGuideline.issuingSociety}, Version: ${currentGuideline.version})</p>
+                <h1>Diagnostischer Pfad: ${firstItemContext.entityName}</h1>
+                <p>Zusammengestellt aus verschiedenen Leitlinien.</p>
             `;
         } else {
             this.elements.pathPrintHeader.innerHTML = `<h1>Diagnostischer Pfad</h1>`;
@@ -626,32 +644,45 @@ class PatientenpfadeApp {
         let content = "Diagnostischer Patientenpfad\n";
         content += "========================================\n\n";
 
-        if (currentEntity && currentGuideline) {
-            content += `Tumorentität: ${currentEntity.entityName}\n`;
-            if (currentSubtype.subtypeName !== currentEntity.entityName) {
-                content += `Subtyp: ${currentSubtype.subtypeName}\n`;
+        if (patientPath.length > 0) {
+            const firstItemContext = patientPath[0].context;
+            content += `Tumorentität: ${firstItemContext.entityName}\n`;
+            if (firstItemContext.subtypeName !== firstItemContext.entityName) {
+                content += `Subtyp: ${firstItemContext.subtypeName}\n\n`;
             }
-            content += `Leitlinie: ${currentGuideline.guidelineTitle} (${currentGuideline.issuingSociety}, ${currentGuideline.version})\n\n`;
         }
 
-        content += "Checkliste der empfohlenen Maßnahmen:\n\n";
-
-        patientPath.forEach(rec => {
-            content += `[ ] ${rec.procedure} (${rec.modality})\n`;
-            content += `    - Klinische Situation: ${rec.clinicalSituation}\n`;
-            content += `    - Stadium / Kontext: ${rec.clinicalStage}\n`;
-            content += `    - Anatomische Region: ${rec.anatomicRegion}\n`;
-            if (rec.details) {
-                content += `    - Details: ${rec.details}\n`;
+        const groupedByGuideline = patientPath.reduce((acc, item) => {
+            const key = `${item.context.guidelineTitle} (${item.context.issuingSociety}, ${item.context.version})`;
+            if (!acc[key]) {
+                acc[key] = [];
             }
-            content += "\n";
-        });
+            acc[key].push(item.recommendation);
+            return acc;
+        }, {});
+
+        for (const guidelineKey in groupedByGuideline) {
+            content += `----------------------------------------\n`;
+            content += `Leitlinie: ${guidelineKey}\n`;
+            content += `----------------------------------------\n\n`;
+            
+            groupedByGuideline[guidelineKey].forEach(rec => {
+                content += `[ ] ${rec.procedure} (${rec.modality})\n`;
+                content += `    - Klinische Situation: ${rec.clinicalSituation}\n`;
+                content += `    - Stadium / Kontext: ${rec.clinicalStage}\n`;
+                content += `    - Anatomische Region: ${rec.anatomicRegion}\n`;
+                if (rec.details) {
+                    content += `    - Details: ${rec.details}\n`;
+                }
+                content += "\n";
+            });
+        }
 
         const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const entityName = currentEntity ? currentEntity.entityName.replace(/[^a-z0-9]/gi, '_') : 'Export';
+        const entityName = patientPath.length > 0 ? patientPath[0].context.entityName.replace(/[^a-z0-9]/gi, '_') : 'Export';
         a.download = `Patientenpfad_${entityName}.txt`;
         document.body.appendChild(a);
         a.click();
