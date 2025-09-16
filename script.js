@@ -343,6 +343,11 @@ class PatientenpfadeApp {
             <div class="recommendation-header">
                 <div class="procedure-info">
                     <h4 class="procedure-name">${recommendation.procedure}</h4>
+                    <div class="recommendation-meta">
+                        <span class="strength-text ${strengthClass}">${recommendation.recommendationStrength}</span>
+                        ${recommendation.recommendationGrade ? `<span class="evidence-badge">Grad: ${recommendation.recommendationGrade}</span>` : ''}
+                        ${recommendation.evidenceLevel ? `<span class="evidence-badge">Evidenz: ${recommendation.evidenceLevel}</span>` : ''}
+                    </div>
                     <span class="modality-badge">${recommendation.modality}</span>
                 </div>
                 <div class="recommendation-header-actions">
@@ -383,30 +388,49 @@ class PatientenpfadeApp {
                     <p>${recommendation.justification}</p>
                 </div>
             </div>
-            <div class="evidence-badges">
-                ${recommendation.recommendationGrade ? `
-                    <span class="evidence-badge">Empfehlungsgrad: ${recommendation.recommendationGrade}</span>
-                ` : ''}
-                ${recommendation.evidenceLevel ? `
-                    <span class="evidence-badge">Evidenzlevel: ${recommendation.evidenceLevel}</span>
-                ` : ''}
+            ${recommendation.sourceText ? `
+            <div class="source-text-container">
+                <button class="source-text-toggle">
+                    Originaltext anzeigen
+                    <i data-lucide="chevron-down"></i>
+                </button>
+                <div class="source-text-content">
+                    <p>${recommendation.sourceText}</p>
+                </div>
             </div>
+            ` : ''}
         `;
 
-        const toggle = card.querySelector('.justification-toggle');
-        const content = card.querySelector('.justification-content');
-        const container = card.querySelector('.justification-container');
+        const justificationToggle = card.querySelector('.justification-toggle');
+        const justificationContent = card.querySelector('.justification-content');
+        const justificationContainer = card.querySelector('.justification-container');
 
-        toggle.addEventListener('click', () => {
-            const isExpanded = container.classList.toggle('expanded');
+        justificationToggle.addEventListener('click', () => {
+            const isExpanded = justificationContainer.classList.toggle('expanded');
             if (isExpanded) {
-                content.style.maxHeight = content.scrollHeight + 'px';
-                toggle.childNodes[0].nodeValue = "Begründung ausblenden ";
+                justificationContent.style.maxHeight = justificationContent.scrollHeight + 'px';
+                justificationToggle.childNodes[0].nodeValue = "Begründung ausblenden ";
             } else {
-                content.style.maxHeight = null;
-                toggle.childNodes[0].nodeValue = "Begründung anzeigen ";
+                justificationContent.style.maxHeight = null;
+                justificationToggle.childNodes[0].nodeValue = "Begründung anzeigen ";
             }
         });
+
+        const sourceTextToggle = card.querySelector('.source-text-toggle');
+        if (sourceTextToggle) {
+            const sourceTextContent = card.querySelector('.source-text-content');
+            const sourceTextContainer = card.querySelector('.source-text-container');
+            sourceTextToggle.addEventListener('click', () => {
+                const isExpanded = sourceTextContainer.classList.toggle('expanded');
+                if (isExpanded) {
+                    sourceTextContent.style.maxHeight = sourceTextContent.scrollHeight + 'px';
+                    sourceTextToggle.childNodes[0].nodeValue = "Originaltext ausblenden ";
+                } else {
+                    sourceTextContent.style.maxHeight = null;
+                    sourceTextToggle.childNodes[0].nodeValue = "Originaltext anzeigen ";
+                }
+            });
+        }
 
         const addToPathBtn = card.querySelector('.add-to-path-btn');
         addToPathBtn.addEventListener('click', () => this.togglePathItem(recommendation, addToPathBtn));

@@ -14,6 +14,7 @@
     --warning-color: #f59e0b;
     --danger-color: #ef4444;
     --info-color: #e3000b;
+    --interactive-text-color: #3b82f6;
     --dgho-color: #2563eb;
     --awmf-color: #16a34a;
     --esmo-color: #ea580c;
@@ -41,6 +42,7 @@ body.dark-mode {
     --glass-border: rgba(255, 255, 255, 0.1);
     --hover-bg: #424241;
     --active-bg: #555554;
+    --interactive-text-color: #60a5fa;
     --logo-bg-stroke: #4b5563;
     --logo-accent: #e3000b;
     --logo-detail: #d1d5db;
@@ -529,12 +531,53 @@ body {
 
 .procedure-info {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .procedure-name {
     font-size: 18px;
     font-weight: 600;
-    margin-bottom: 8px;
+}
+
+.recommendation-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.strength-text {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.strength-text.empfohlen,
+.strength-text.soll,
+.strength-text.obligat {
+    color: var(--success-color);
+}
+
+.strength-text.kann-erwogen-werden,
+.strength-text.optional,
+.strength-text.fakultativ {
+    color: var(--warning-color);
+}
+
+.strength-text.nicht-empfohlen,
+.strength-text.sollte-nicht {
+    color: var(--danger-color);
+}
+
+.evidence-badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
 }
 
 .modality-badge {
@@ -545,6 +588,7 @@ body {
     font-weight: 500;
     background: var(--secondary-bg);
     border: 1px solid var(--border-color);
+    align-self: flex-start;
 }
 
 .recommendation-header-actions {
@@ -636,37 +680,48 @@ body {
     color: var(--text-primary);
 }
 
-.justification-container {
+.justification-container,
+.source-text-container {
     margin-top: 15px;
 }
 
-.justification-toggle {
+.justification-toggle,
+.source-text-toggle {
     display: flex;
     align-items: center;
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
-    color: var(--info-color);
+    color: var(--interactive-text-color);
     user-select: none;
     background: none;
     border: none;
     padding: 0;
     width: 100%;
     text-align: left;
+    transition: color var(--transition-fast);
 }
 
-.justification-toggle i {
+.justification-toggle:hover,
+.source-text-toggle:hover {
+    opacity: 0.8;
+}
+
+.justification-toggle i,
+.source-text-toggle i {
     width: 16px;
     height: 16px;
     margin-left: 5px;
     transition: transform var(--transition-fast);
 }
 
-.justification-container.expanded .justification-toggle i {
+.justification-container.expanded .justification-toggle i,
+.source-text-container.expanded .source-text-toggle i {
     transform: rotate(180deg);
 }
 
-.justification-content {
+.justification-content,
+.source-text-content {
     max-height: 0;
     overflow: hidden;
     transition: max-height var(--transition-normal) ease-out;
@@ -675,23 +730,15 @@ body {
     line-height: 1.6;
 }
 
-.justification-content p {
+.justification-content p,
+.source-text-content p {
     padding-top: 10px;
 }
 
-.evidence-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.evidence-badge {
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 500;
-    background: var(--secondary-bg);
-    border: 1px solid var(--border-color);
+.source-text-content p {
+    font-style: italic;
+    border-left: 3px solid var(--border-color);
+    padding-left: 10px;
 }
 
 .loading-overlay {
