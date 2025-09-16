@@ -359,46 +359,48 @@ class PatientenpfadeApp {
                     </button>
                 </div>
             </div>
-            <div class="recommendation-details">
-                <span class="detail-label">Region:</span>
-                <span class="detail-value">${recommendation.anatomicRegion}</span>
-                
-                ${recommendation.details ? `
-                    <span class="detail-label">Details:</span>
-                    <span class="detail-value">${recommendation.details}</span>
-                ` : ''}
+            <div class="recommendation-body">
+                <div class="recommendation-details">
+                    <span class="detail-label">Region:</span>
+                    <span class="detail-value">${recommendation.anatomicRegion}</span>
+                    
+                    ${recommendation.details ? `
+                        <span class="detail-label">Details:</span>
+                        <span class="detail-value">${recommendation.details}</span>
+                    ` : ''}
 
-                <span class="detail-label">Stadium:</span>
-                <span class="detail-value">${recommendation.clinicalStage}</span>
+                    <span class="detail-label">Stadium:</span>
+                    <span class="detail-value">${recommendation.clinicalStage}</span>
 
-                ${recommendation.patientGroup ? `
-                    <span class="detail-label">Patientengruppe:</span>
-                    <span class="detail-value">${recommendation.patientGroup}</span>
-                ` : ''}
+                    ${recommendation.patientGroup ? `
+                        <span class="detail-label">Patientengruppe:</span>
+                        <span class="detail-value">${recommendation.patientGroup}</span>
+                    ` : ''}
 
-                <span class="detail-label">Häufigkeit:</span>
-                <span class="detail-value">${recommendation.frequency}</span>
-            </div>
-            <div class="justification-container">
-                <button class="justification-toggle">
-                    Begründung anzeigen
-                    <i data-lucide="chevron-down"></i>
-                </button>
-                <div class="justification-content">
-                    <p>${recommendation.justification}</p>
+                    <span class="detail-label">Häufigkeit:</span>
+                    <span class="detail-value">${recommendation.frequency}</span>
                 </div>
-            </div>
-            ${recommendation.sourceText ? `
-            <div class="source-text-container">
-                <button class="source-text-toggle">
-                    Originaltext anzeigen
-                    <i data-lucide="chevron-down"></i>
-                </button>
-                <div class="source-text-content">
-                    <p>${recommendation.sourceText}</p>
+                <div class="justification-container">
+                    <button class="justification-toggle">
+                        Begründung anzeigen
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+                    <div class="justification-content">
+                        <p>${recommendation.justification}</p>
+                    </div>
                 </div>
+                ${recommendation.sourceText ? `
+                <div class="source-text-container">
+                    <button class="source-text-toggle">
+                        Originaltext anzeigen
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+                    <div class="source-text-content">
+                        <p>${recommendation.sourceText}</p>
+                    </div>
+                </div>
+                ` : ''}
             </div>
-            ` : ''}
         `;
 
         const justificationToggle = card.querySelector('.justification-toggle');
