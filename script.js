@@ -5,8 +5,64 @@ let currentGuideline = null;
 let searchTerm = '';
 let patientPath = [];
 
+const tooltipData = {
+    'AWMF-DKG': {
+        'EK': 'Expertenkonsens: Starke Empfehlung der Leitliniengruppe, auch ohne hochwertige Studienlage, basierend auf klinischer Erfahrung und Konsens.',
+        'A': 'Starker Empfehlungsgrad (Soll): Eine Handlung oder Maßnahme, die in jedem Fall durchgeführt werden soll.',
+        'B': 'Empfehlungsgrad (Sollte): Eine Handlung oder Maßnahme, die im Regelfall durchgeführt werden sollte.',
+        'C': 'Empfehlungsgrad (Kann): Eine Handlung oder Maßnahme, deren Durchführung im Ermessen des Behandlers liegt.',
+        'D': 'Empfehlungsgrad (Soll nicht): Eine Handlung oder Maßnahme, die im Regelfall nicht durchgeführt werden sollte.',
+        '0': 'Offener Empfehlungsgrad (Kann): Eine Handlung oder Maßnahme, deren Durchführung im Ermessen des Behandlers liegt.',
+        'B/0': 'Empfehlungsgrad (Sollte/Kann): Eine Handlung oder Maßnahme, deren Durchführung im Regelfall erwogen werden sollte.',
+        'I': 'Evidenzlevel I: Evidenz aus Meta-Analysen oder mindestens einer randomisierten kontrollierten Studie (RCT).',
+        'II': 'Evidenzlevel II: Evidenz aus mindestens einer gut angelegten kontrollierten Studie ohne Randomisierung oder anderen quasi-experimentellen Studien.',
+        'III': 'Evidenzlevel III: Evidenz aus gut angelegten, nicht-experimentellen deskriptiven Studien (z.B. Vergleichsstudien, Korrelationsstudien, Fall-Kontroll-Studien).',
+        'IV': 'Evidenzlevel IV: Evidenz aus Berichten/Meinungen von Expertenkreisen, Konsensus-Konferenzen und/oder klinischer Erfahrung anerkannter Autoritäten.',
+        'V': 'Evidenzlevel V: Evidenz basiert auf nicht-analytischen Studien (z.B. Fallberichte, Fallserien).',
+        '1': 'Evidenzlevel 1 (Oxford): Systematische Reviews von randomisierten kontrollierten Studien (RCTs) oder einzelne große RCTs.',
+        '2': 'Evidenzlevel 2 (Oxford): Kohorten- oder Fall-Kontroll-Studien, idealerweise von mehr als einem Zentrum oder einer Forschungsgruppe.',
+        '3': 'Evidenzlevel 3 (Oxford): Fallserien ohne Kontrollgruppe oder Expertenmeinungen.',
+        '4': 'Evidenzlevel 4 (Oxford): Expertenmeinungen ohne explizite kritische Bewertung, oder basierend auf Physiologie oder Laborforschung.',
+        '5': 'Evidenzlevel 5 (Oxford): Fallberichte oder klinische Erfahrung ohne systematische Analyse.',
+        '1a': 'Evidenzlevel 1a: Systematische Übersichtsarbeit von homogenen randomisierten, kontrollierten Studien (RCTs).',
+        '1b': 'Evidenzlevel 1b: Einzelne randomisierte, kontrollierte Studie (RCT).',
+        '2a': 'Evidenzlevel 2a: Systematische Übersichtsarbeit von homogenen Kohortenstudien.',
+        '2b': 'Evidenzlevel 2b: Einzelne Kohortenstudie oder minderwertige RCT.',
+        '3a': 'Evidenzlevel 3a: Systematische Übersichtsarbeit von homogenen Fall-Kontroll-Studien.',
+        '3b': 'Evidenzlevel 3b: Einzelne Fall-Kontroll-Studie.',
+        '2+': 'Evidenzlevel 2+ (SIGN): Systematische Reviews von Kohorten- oder Fall-Kontroll-Studien mit sehr geringem Verzerrungsrisiko.',
+        '2++': 'Evidenzlevel 2++ (SIGN): Hochwertige systematische Reviews von Kohorten- oder Fall-Kontroll-Studien.',
+        '1-': 'Evidenzlevel 1- (SIGN): RCTs mit hohem Verzerrungsrisiko.',
+        '2-': 'Evidenzlevel 2- (SIGN): Nicht-analytische Studien, z.B. Fallberichte, Fallserien.',
+        '1+': 'Evidenzlevel 1+ (SIGN): RCTs mit geringem Verzerrungsrisiko.',
+        '⊕⊕⊕⊕': 'Hohe Evidenzqualität (GRADE): Weitere Forschung wird die Einschätzung des Effekts sehr wahrscheinlich nicht ändern.',
+        '⊕⊕⊕⊝': 'Moderate Evidenzqualität (GRADE): Weitere Forschung kann die Einschätzung des Effekts beeinflussen und könnte diese ändern.',
+        '⊕⊕⊝⊝': 'Niedrige Evidenzqualität (GRADE): Weitere Forschung wird die Einschätzung des Effekts sehr wahrscheinlich ändern.',
+        '⊕⊝⊝⊝': 'Sehr niedrige Evidenzqualität (GRADE): Jede Einschätzung des Effekts ist unsicher.',
+        '⊕⊕⊝⊝ low': 'Niedrige Evidenzqualität (GRADE): Weitere Forschung wird die Einschätzung des Effekts sehr wahrscheinlich ändern.',
+        '⊕⊝⊝⊝ very low': 'Sehr niedrige Evidenzqualität (GRADE): Jede Einschätzung des Effekts ist unsicher.'
+    },
+    'ESMO': {
+        'I': 'Level of Evidence I: Evidenz aus mindestens einer großen, randomisierten, kontrollierten Studie (RCT) oder einer Meta-Analyse von hochwertigen RCTs.',
+        'II': 'Level of Evidence II: Evidenz aus kleinen RCTs oder Meta-Analysen von RCTs, die statistisch nicht signifikant waren oder leichte methodische Schwächen aufweisen.',
+        'III': 'Level of Evidence III: Evidenz aus prospektiven, vergleichenden Kohortenstudien.',
+        'IV': 'Level of Evidence IV: Evidenz aus retrospektiven Kohortenstudien oder Fall-Kontroll-Studien.',
+        'V': 'Level of Evidence V: Evidenz aus Studien ohne Kontrollgruppe, Fallberichten oder Expertenmeinungen.',
+        'A': 'Grade of Recommendation A: Starke Evidenz für die Wirksamkeit mit erheblichem klinischem Nutzen; dringend empfohlen.',
+        'B': 'Grade of Recommendation B: Starke oder moderate Evidenz für die Wirksamkeit, aber mit begrenztem klinischem Nutzen; generell empfohlen.',
+        'C': 'Grade of Recommendation C: Moderate Evidenz für die Wirksamkeit, aber der Nutzen ist klein oder vergleichbar mit anderen Ansätzen; optional.',
+        'D': 'Grade of Recommendation D: Moderate Evidenz gegen die Wirksamkeit oder für eine Schädlichkeit; generell nicht empfohlen.',
+        'E': 'Grade of Recommendation E: Starke Evidenz gegen die Wirksamkeit oder für eine Schädlichkeit; niemals empfohlen.'
+    },
+    'DGHO': {
+        '[1]': 'Dies ist eine direkte Quellenangabe aus der Leitlinie. Für Details siehe Originalquelle.',
+        '[23]': 'Dies ist eine direkte Quellenangabe aus der Leitlinie. Für Details siehe Originalquelle.'
+    }
+};
+
 class PatientenpfadeApp {
     constructor() {
+        this.activeTooltip = null;
         this.initializeElements();
         this.attachEventListeners();
         this.initializeLucideIcons();
@@ -60,6 +116,26 @@ class PatientenpfadeApp {
         this.elements.mainContainer.addEventListener('click', (e) => {
             if (this.elements.sidebar.classList.contains('open') && e.target === this.elements.mainContainer) {
                 this.toggleMobileNav(false);
+            }
+        });
+
+        this.elements.timelineContainer.addEventListener('click', (e) => {
+            const icon = e.target.closest('.info-icon');
+            if (icon) {
+                this.toggleTooltip(icon);
+            }
+        });
+
+        this.elements.timelineContainer.addEventListener('mouseout', (e) => {
+            const icon = e.target.closest('.info-icon');
+            if (icon && this.activeTooltip && this.activeTooltip.owner === icon) {
+                this.hideTooltip();
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (this.activeTooltip && !e.target.closest('.info-icon')) {
+                this.hideTooltip();
             }
         });
     }
@@ -345,8 +421,16 @@ class PatientenpfadeApp {
                     <h4 class="procedure-name">${recommendation.procedure}</h4>
                     <div class="recommendation-meta">
                         <span class="strength-text ${strengthClass}">${recommendation.recommendationStrength}</span>
-                        ${recommendation.recommendationGrade ? `<span class="evidence-badge">Grad: ${recommendation.recommendationGrade}</span>` : ''}
-                        ${recommendation.evidenceLevel ? `<span class="evidence-badge">Evidenz: ${recommendation.evidenceLevel}</span>` : ''}
+                        ${recommendation.recommendationGrade ? `
+                            <span class="evidence-badge" data-value="${recommendation.recommendationGrade}">
+                                Grad: ${recommendation.recommendationGrade}
+                                <i data-lucide="info" class="info-icon"></i>
+                            </span>` : ''}
+                        ${recommendation.evidenceLevel ? `
+                            <span class="evidence-badge" data-value="${recommendation.evidenceLevel}">
+                                Evidenz: ${recommendation.evidenceLevel}
+                                <i data-lucide="info" class="info-icon"></i>
+                            </span>` : ''}
                     </div>
                     <span class="modality-badge">${recommendation.modality}</span>
                 </div>
@@ -444,6 +528,52 @@ class PatientenpfadeApp {
         addToPathBtn.addEventListener('click', () => this.togglePathItem(recommendation, addToPathBtn));
         
         return card;
+    }
+
+    toggleTooltip(iconElement) {
+        if (this.activeTooltip && this.activeTooltip.owner === iconElement) {
+            this.hideTooltip();
+        } else {
+            this.hideTooltip();
+            this.showTooltip(iconElement);
+        }
+    }
+
+    showTooltip(iconElement) {
+        const badge = iconElement.closest('.evidence-badge');
+        if (!badge) return;
+    
+        const value = badge.dataset.value;
+        const society = currentGuideline.issuingSociety;
+        const societyData = tooltipData[society] || tooltipData['AWMF-DKG'];
+    
+        let text = 'Keine Detailinformation verfügbar.';
+    
+        if (value && value.includes(',')) {
+            const parts = value.split(',').map(part => part.trim());
+            const texts = parts.map(part => societyData[part] || `Unbekannter Wert: ${part}`);
+            text = texts.join('\n\n');
+        } else if (value) {
+            text = societyData[value] || (tooltipData.DGHO[value] || text);
+        }
+    
+        const tooltip = document.createElement('div');
+        tooltip.className = 'recommendation-tooltip';
+        tooltip.innerText = text;
+        document.body.appendChild(tooltip);
+    
+        const rect = iconElement.getBoundingClientRect();
+        tooltip.style.left = `${rect.left + window.scrollX}px`;
+        tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+        
+        this.activeTooltip = { element: tooltip, owner: iconElement };
+    }
+    
+    hideTooltip() {
+        if (this.activeTooltip) {
+            this.activeTooltip.element.remove();
+            this.activeTooltip = null;
+        }
     }
 
     getStrengthClass(strength) {
