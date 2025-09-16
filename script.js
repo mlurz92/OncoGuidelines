@@ -5,7 +5,7 @@ let currentGuideline = null;
 let searchTerm = '';
 let patientPath = [];
 
-class OncoGuidelinesApp {
+class PatientenpfadeApp {
     constructor() {
         this.initializeElements();
         this.attachEventListeners();
@@ -597,7 +597,7 @@ class OncoGuidelinesApp {
     exportPathAsTxt() {
         if (patientPath.length === 0) return;
 
-        let content = "Diagnostischer Pfad - OncoGuidelines\n";
+        let content = "Diagnostischer Patientenpfad\n";
         content += "========================================\n\n";
 
         if (currentEntity && currentGuideline) {
@@ -626,7 +626,7 @@ class OncoGuidelinesApp {
         const a = document.createElement('a');
         a.href = url;
         const entityName = currentEntity ? currentEntity.entityName.replace(/[^a-z0-9]/gi, '_') : 'Export';
-        a.download = `OncoGuidelines_Pfad_${entityName}.txt`;
+        a.download = `Patientenpfad_${entityName}.txt`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -635,5 +635,5 @@ class OncoGuidelinesApp {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const app = new OncoGuidelinesApp();
+    const app = new PatientenpfadeApp();
 });
