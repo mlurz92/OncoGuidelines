@@ -17,6 +17,7 @@ OncoGuidelines/
 ├── script.js
 ├── style.css
 └── data/
+    ├── logo_icon_horizontal.svg
     ├── JSON-Schema.json
     ├── logo.svg
     ├── OncoGuidelines.json
@@ -60,7 +61,7 @@ Das UI ist minimalistisch, funktional und auf eine schnelle Informationserfassun
 Die linke Sidebar ist das primäre Navigationsinstrument.
 
 *   **Header**:
-    *   **Logo & Titel**: Ein animiertes SVG-Logo, das sich beim Laden der Seite zeichnet, schafft einen hochwertigen ersten Eindruck. Daneben steht der Titel "Patientenpfade".
+    *   **Logo & Titel**: Ein animiertes, horizontales SVG-Logo, das einen stilisierten diagnostischen Pfad mit vier vernetzten Knotenpunkten darstellt. Die Animation zeichnet beim Laden der Seite zuerst den Pfad und dann nacheinander die einzelnen Knotenpunkte, was einen dynamischen und hochwertigen ersten Eindruck schafft. Daneben steht der Titel "Patientenpfade".
     *   **Suche**: Ein prominentes Suchfeld (`<input type="text">`) mit einem Lupen-Icon ermöglicht das Filtern der Tumor-Entitäten in Echtzeit. Der Platzhalter "Tumorentität suchen..." leitet den Nutzer an. Das Suchfeld ist per Tastaturkürzel `Strg+K` (oder `Cmd+K`) direkt erreichbar.
 *   **Navigationsliste**:
     *   Die Liste der Tumorentitäten wird dynamisch aus der `OncoGuidelines.json` generiert.
@@ -149,4 +150,3 @@ Das Design orientiert sich am Corporate Design des Klinikums St. Georg Leipzig u
 #### 8. Zusammenfassung
 
 Die Anwendung "Diagnostische Patientenpfade" ist ein durchdachtes, hochfunktionales und ästhetisch ansprechendes Werkzeug für den klinischen Alltag. Durch die Kombination einer soliden technischen Basis, einer streng strukturierten, unveränderlichen Datenbank und einer auf maximale Benutzerfreundlichkeit ausgelegten Oberfläche, bietet sie einen signifikanten Mehrwert für die evidenzbasierte Medizin. Die detaillierte und kontextsensitive Darstellung der Leitlinienempfehlungen, gepaart mit der innovativen Patientenpfad-Funktion, macht sie zu einem herausragenden Beispiel für ein modernes, digitales Clinical Decision Support System.
-

@@ -18,9 +18,8 @@
     --dgho-color: #2563eb;
     --awmf-color: #16a34a;
     --esmo-color: #ea580c;
-    --logo-bg-stroke: #f3f4f6;
     --logo-accent: #e3000b;
-    --logo-detail: #555554;
+    --logo-detail: #444444;
     --logo-point-stroke: #ffffff;
     --transition-fast: 200ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -43,7 +42,6 @@ body.dark-mode {
     --hover-bg: #424241;
     --active-bg: #555554;
     --interactive-text-color: #60a5fa;
-    --logo-bg-stroke: #4b5563;
     --logo-accent: #e3000b;
     --logo-detail: #d1d5db;
     --logo-point-stroke: #262625;
@@ -123,8 +121,8 @@ body {
 }
 
 #sidebar-logo {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 30px;
     flex-shrink: 0;
 }
 
@@ -133,7 +131,7 @@ body {
 }
 
 #welcome-logo {
-    width: 120px;
+    width: 246px;
     height: 120px;
     margin: 0 auto 30px;
     display: block;
