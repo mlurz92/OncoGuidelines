@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostische Patientenpfade - Klinische Leitlinien</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#111827">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Patientenpfade">
+    <link rel="apple-touch-icon" href="data/logo.svg">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+    <div class="theme-toggle" id="themeToggle">
+        <i data-lucide="sun" class="theme-icon light-icon"></i>
+        <i data-lucide="moon" class="theme-icon dark-icon"></i>
+    </div>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <svg id="sidebar-logo" class="app-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="none" stroke="var(--logo-bg-stroke)" stroke-width="2" d="M10,100A90,90 0,1,1 190,100A90,90 0,1,1 10,100" class="tZwpGlwL_0"></path>
+                    <path d="M 30 100 L 80 100 L 100 70 L 120 100 L 170 100" fill="none" stroke="var(--logo-accent)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" class="tZwpGlwL_1"></path>
+                    <g>
+                        <path stroke="var(--logo-detail)" stroke-width="4" stroke-linecap="round" d="M100,60L100,80" class="tZwpGlwL_2"></path>
+                        <path stroke="var(--logo-detail)" stroke-width="4" stroke-linecap="round" d="M90,70L110,70" class="tZwpGlwL_3"></path>
+                    </g>
+                    <path fill="var(--logo-accent)" stroke="var(--logo-point-stroke)" stroke-width="2" d="M75,100A5,5 0,1,1 85,100A5,5 0,1,1 75,100" class="tZwpGlwL_4"></path>
+                    <path fill="var(--logo-accent)" stroke="var(--logo-point-stroke)" stroke-width="2" d="M115,100A5,5 0,1,1 125,100A5,5 0,1,1 115,100" class="tZwpGlwL_5"></path>
+                    <path fill="var(--logo-point-stroke)" stroke="var(--logo-detail)" stroke-width="3" d="M92,100A8,8 0,1,1 108,100A8,8 0,1,1 92,100" class="tZwpGlwL_6"></path>
+                    <style data-made-with="vivus-instant">.tZwpGlwL_0{stroke-dasharray:566 568;stroke-dashoffset:567;animation:tZwpGlwL_draw 1000ms linear 0ms forwards;}.tZwpGlwL_1{stroke-dasharray:173 175;stroke-dashoffset:174;animation:tZwpGlwL_draw 1000ms linear 100ms forwards;}.tZwpGlwL_2{stroke-dasharray:20 22;stroke-dashoffset:21;animation:tZwpGlwL_draw 1000ms linear 300ms forwards;}.tZwpGlwL_3{stroke-dasharray:20 22;stroke-dashoffset:21;animation:tZwpGlwL_draw 1000ms linear 300ms forwards;}.tZwpGlwL_4{stroke-dasharray:32 34;stroke-dashoffset:33;animation:tZwpGlwL_draw 1000ms linear 500ms forwards;}.tZwpGlwL_5{stroke-dasharray:32 34;stroke-dashoffset:33;animation:tZwpGlwL_draw 1000ms linear 500ms forwards;}.tZwpGlwL_6{stroke-dasharray:51 53;stroke-dashoffset:52;animation:tZwpGlwL_draw 1000ms linear 400ms forwards;}@keyframes tZwpGlwL_draw{100%{stroke-dashoffset:0;}}</style>
+                </svg>
+                <h2 class="sidebar-title">Patientenpfade</h2>
+            </div>
+            <div class="sidebar-search">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" placeholder="Tumorentität suchen..." id="searchInput">
+            </div>
+        </div>
+        <div class="sidebar-content" id="sidebarContent"></div>
+    </nav>
+
+    <main class="main-container">
+        <button class="mobile-nav-toggle" id="mobileNavToggle">
+            <i data-lucide="menu"></i>
+        </button>
+
+        <div class="guideline-header" id="guidelineHeader">
+            <div class="entity-info">
+                <h1 class="entity-title" id="entityTitle">Wählen Sie eine Tumorentität</h1>
+                <p class="entity-subtitle" id="entitySubtitle">Navigieren Sie über das Menü links</p>
+            </div>
+            <div class="society-tabs" id="societyTabs"></div>
+        </div>
+
+        <div class="guideline-container" id="guidelineContainer">
+            <div class="welcome-screen" id="welcomeScreen">
+                <div class="welcome-content">
+                    <svg id="welcome-logo" class="app-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        <path fill="none" stroke="var(--logo-bg-stroke)" stroke-width="2" d="M10,100A90,90 0,1,1 190,100A90,90 0,1,1 10,100" class="tZwpGlwL_0"></path>
+                        <path d="M 30 100 L 80 100 L 100 70 L 120 100 L 170 100" fill="none" stroke="var(--logo-accent)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" class="tZwpGlwL_1"></path>
+                        <g>
+                            <path stroke="var(--logo-detail)" stroke-width="4" stroke-linecap="round" d="M100,60L100,80" class="tZwpGlwL_2"></path>
+                            <path stroke="var(--logo-detail)" stroke-width="4" stroke-linecap="round" d="M90,70L110,70" class="tZwpGlwL_3"></path>
+                        </g>
+                        <path fill="var(--logo-accent)" stroke="var(--logo-point-stroke)" stroke-width="2" d="M75,100A5,5 0,1,1 85,100A5,5 0,1,1 75,100" class="tZwpGlwL_4"></path>
+                        <path fill="var(--logo-accent)" stroke="var(--logo-point-stroke)" stroke-width="2" d="M115,100A5,5 0,1,1 125,100A5,5 0,1,1 115,100" class="tZwpGlwL_5"></path>
+                        <path fill="var(--logo-point-stroke)" stroke="var(--logo-detail)" stroke-width="3" d="M92,100A8,8 0,1,1 108,100A8,8 0,1,1 92,100" class="tZwpGlwL_6"></path>
+                        <style data-made-with="vivus-instant">.tZwpGlwL_0{stroke-dasharray:566 568;stroke-dashoffset:567;animation:tZwpGlwL_draw 1000ms linear 0ms forwards;}.tZwpGlwL_1{stroke-dasharray:173 175;stroke-dashoffset:174;animation:tZwpGlwL_draw 1000ms linear 100ms forwards;}.tZwpGlwL_2{stroke-dasharray:20 22;stroke-dashoffset:21;animation:tZwpGlwL_draw 1000ms linear 300ms forwards;}.tZwpGlwL_3{stroke-dasharray:20 22;stroke-dashoffset:21;animation:tZwpGlwL_draw 1000ms linear 300ms forwards;}.tZwpGlwL_4{stroke-dasharray:32 34;stroke-dashoffset:33;animation:tZwpGlwL_draw 1000ms linear 500ms forwards;}.tZwpGlwL_5{stroke-dasharray:32 34;stroke-dashoffset:33;animation:tZwpGlwL_draw 1000ms linear 500ms forwards;}.tZwpGlwL_6{stroke-dasharray:51 53;stroke-dashoffset:52;animation:tZwpGlwL_draw 1000ms linear 400ms forwards;}@keyframes tZwpGlwL_draw{100%{stroke-dashoffset:0;}}</style>
+                    </svg>
+                    <h2>Willkommen bei Diagnostische Patientenpfade</h2>
+                    <p>Wählen Sie eine Tumorentität aus dem Menü, um die entsprechenden Leitlinien zur bildgebenden Diagnostik anzuzeigen.</p>
+                </div>
+            </div>
+            <div class="timeline-container" id="timelineContainer"></div>
+        </div>
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="patient-path-fab" id="patientPathFab">
+        <i data-lucide="clipboard-list"></i>
+        <span class="path-count" id="pathCount">0</span>
+    </div>
+
+    <div class="path-modal-overlay" id="pathModalOverlay">
+        <div class="path-modal" id="pathModal">
+            <div class="path-modal-header">
+                <h2 class="path-modal-title">Diagnostischer Patientenpfad</h2>
+                <div class="path-modal-actions">
+                    <button class="path-action-btn" id="exportPathBtn">
+                        <i data-lucide="file-text"></i>
+                        <span>Als TXT</span>
+                    </button>
+                    <button class="path-action-btn" id="printPathBtn">
+                        <i data-lucide="printer"></i>
+                        <span>Drucken / PDF</span>
+                    </button>
+                    <button class="path-action-btn clear" id="clearPathBtn">
+                        <i data-lucide="trash-2"></i>
+                        <span>Pfad leeren</span>
+                    </button>
+                    <button class="path-modal-close" id="pathModalClose">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="path-modal-content" id="pathModalContent">
+                <div class="path-print-header" id="pathPrintHeader"></div>
+                <div class="empty-path-message" id="emptyPathMessage">
+                    <i data-lucide="list-plus"></i>
+                    <p>Fügen Sie Empfehlungen hinzu, um Ihren diagnostischen Pfad zu erstellen.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

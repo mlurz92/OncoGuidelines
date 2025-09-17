@@ -1,0 +1,20 @@
+<svg id="red-white-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="">
+            <!-- Background circle in light gray -->
+            <path fill="none" stroke="#f3f4f6" stroke-width="2" d="M10,100A90,90 0,1,1 190,100A90,90 0,1,1 10,100" class="tZwpGlwL_0"></path>
+            
+            <!-- Main path in red -->
+            <path id="main-path" d="M 30 100 L 80 100 L 100 70 L 120 100 L 170 100" fill="none" stroke="#dc2626" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" class="tZwpGlwL_1"></path>
+            
+            <!-- Medical cross in dark gray -->
+            <g id="medical-cross">
+                <path stroke="#374151" stroke-width="4" stroke-linecap="round" d="M100,60L100,80" class="tZwpGlwL_2"></path>
+                <path stroke="#374151" stroke-width="4" stroke-linecap="round" d="M90,70L110,70" class="tZwpGlwL_3"></path>
+            </g>
+            
+            <!-- Decision points in red with white border -->
+            <path fill="#dc2626" stroke="white" stroke-width="2" d="M75,100A5,5 0,1,1 85,100A5,5 0,1,1 75,100" class="tZwpGlwL_4"></path>
+            <path fill="#dc2626" stroke="white" stroke-width="2" d="M115,100A5,5 0,1,1 125,100A5,5 0,1,1 115,100" class="tZwpGlwL_5"></path>
+            
+            <!-- Central focus point in dark gray -->
+            <path fill="white" stroke="#374151" stroke-width="3" d="M92,100A8,8 0,1,1 108,100A8,8 0,1,1 92,100" class="tZwpGlwL_6"></path>
+        <style data-made-with="vivus-instant">.tZwpGlwL_0{stroke-dasharray:566 568;stroke-dashoffset:567;animation:tZwpGlwL_draw 1000ms linear 0ms forwards;}.tZwpGlwL_1{stroke-dasharray:173 175;stroke-dashoffset:174;animation:tZwpGlwL_draw 1000ms linear 0ms forwards;}.tZwpGlwL_2{stroke-dasharray:20 22;stroke-dashoffset:21;animation:tZwpGlwL_draw 1000ms linear 0ms forwards;}.tZwpGlwL_3{stroke-dasharray:20 22;stroke-dashoffset:21;animation:tZwpGlwL_draw 1000ms linear 0ms forwards;}.tZwpGlwL_4{stroke-dasharray:32 34;stroke-dashoffset:33;animation:tZwpGlwL_draw 1000ms linear 0ms forwards;}.tZwpGlwL_5{stroke-dasharray:32 34;stroke-dashoffset:33;animation:tZwpGlwL_draw 1000ms linear 0ms forwards;}.tZwpGlwL_6{stroke-dasharray:51 53;stroke-dashoffset:52;animation:tZwpGlwL_draw 1000ms linear 0ms forwards;}@keyframes tZwpGlwL_draw{100%{stroke-dashoffset:0;}}@keyframes tZwpGlwL_fade{0%{stroke-opacity:1;}92.3076923076923%{stroke-opacity:1;}100%{stroke-opacity:0;}}</style></svg>
