@@ -34,6 +34,11 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
     const requestUrl = new URL(event.request.url);
 
+    if (event.request.mode === 'navigate') {
+        event.respondWith(caches.match('/index.html'));
+        return;
+    }
+    
     if (requestUrl.pathname === '/data/OncoGuidelines.json') {
         event.respondWith(
             caches.open(DYNAMIC_CACHE_NAME).then(cache => {
@@ -46,7 +51,7 @@ self.addEventListener('fetch', event => {
                 });
             })
         );
-    } else if (ASSETS_TO_CACHE.includes(requestUrl.pathname) || requestUrl.pathname.startsWith('/icons/') || requestUrl.pathname.startsWith('/data/')) {
+    } else {
         event.respondWith(
             caches.match(event.request).then(response => {
                 return response || fetch(event.request);
