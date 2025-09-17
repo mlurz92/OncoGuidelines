@@ -2,147 +2,34 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnostische Patientenpfade - Klinische Leitlinien</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#111827">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Patientenpfade">
-    <link rel="apple-touch-icon" href="data/logo.svg">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
-    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#e3000b">
+    <title>Diagnostische Patientenpfade</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="data/logo_icon_192.png">
+    <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
 </head>
-<body class="dark-mode">
-    <div class="background-container"></div>
-    <svg style="width:0;height:0;position:absolute;" aria-hidden="true" focusable="false">
-        <defs>
-            <radialGradient id="appLogoGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                <stop offset="0%" style="stop-color:rgba(255, 100, 100, 0.9)"/>
-                <stop offset="60%" style="stop-color:rgba(227, 0, 11, 0.85)"/>
-                <stop offset="100%" style="stop-color:rgba(150, 0, 11, 0.9)"/>
-            </radialGradient>
-        </defs>
-    </svg>
-
-    <div class="theme-toggle" id="themeToggle">
-        <i data-lucide="sun" class="theme-icon light-icon"></i>
-        <i data-lucide="moon" class="theme-icon dark-icon"></i>
-    </div>
-
-    <nav class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-container">
-                <svg id="sidebar-logo" class="app-logo" viewBox="0 0 246 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="sidebar-logo-title sidebar-logo-desc">
-                    <title id="sidebar-logo-title">Diagnostischer Pfad – Icon (horizontal)</title>
-                    <desc id="sidebar-logo-desc">Abstrakter Pfad mit vier leuchtenden, vernetzten Glasknotenpunkten.</desc>
-                    <g stroke-linecap="round" stroke-linejoin="round">
-                        <path fill="none" stroke="var(--logo-detail)" stroke-width="6" d="M30,85L95,60L165,92L225,55" class="QNsytJhA_0"></path>
-                        <path class="node QNsytJhA_1" fill="url(#appLogoGradient)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1.5" d="M15,85A15,15 0,1,1 45,85A15,15 0,1,1 15,85"></path>
-                        <path class="node QNsytJhA_2" fill="url(#appLogoGradient)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1.5" d="M80,60A15,15 0,1,1 110,60A15,15 0,1,1 80,60"></path>
-                        <path class="node QNsytJhA_3" fill="url(#appLogoGradient)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1.5" d="M150,92A15,15 0,1,1 180,92A15,15 0,1,1 150,92"></path>
-                        <path class="node QNsytJhA_4" fill="url(#appLogoGradient)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1.5" d="M210,55A15,15 0,1,1 240,55A15,15 0,1,1 210,55"></path>
-                        <path d="M80,45 a20,20 0 0,1 30,0" fill="none" stroke="var(--logo-detail)" stroke-width="3" opacity="0.6" class="QNsytJhA_5"></path>
-                        <path d="M210,40 a20,20 0 0,1 30,0" fill="none" stroke="var(--logo-detail)" stroke-width="2" opacity="0.4" class="QNsytJhA_6"></path>
-                    </g>
-                    <style data-made-with="vivus-instant">.QNsytJhA_0{stroke-dasharray:218 220;stroke-dashoffset:219;animation:QNsytJhA_draw 2000ms ease 0ms forwards;}.QNsytJhA_1{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 166ms forwards;}.QNsytJhA_2{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 333ms forwards;}.QNsytJhA_3{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 500ms forwards;}.QNsytJhA_4{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 666ms forwards;}.QNsytJhA_5{stroke-dasharray:34 36;stroke-dashoffset:35;animation:QNsytJhA_draw 2000ms ease 833ms forwards;}.QNsytJhA_6{stroke-dasharray:34 36;stroke-dashoffset:35;animation:QNsytJhA_draw 2000ms ease 1000ms forwards;}@keyframes QNsytJhA_draw{100%{stroke-dashoffset:0;}}</style>
-                </svg>
-                <h2 class="sidebar-title">Patientenpfade</h2>
-            </div>
-            <div class="sidebar-search">
-                <i data-lucide="search" class="search-icon"></i>
-                <input type="text" placeholder="Tumorentität suchen..." id="searchInput">
-            </div>
-        </div>
-        <div class="sidebar-content" id="sidebarContent"></div>
-    </nav>
-
-    <main class="main-container">
-        <button class="mobile-nav-toggle" id="mobileNavToggle">
-            <i data-lucide="menu"></i>
-        </button>
-
-        <div class="guideline-header" id="guidelineHeader">
-            <div class="entity-info">
-                <h1 class="entity-title" id="entityTitle">Wählen Sie eine Tumorentität</h1>
-                <p class="entity-subtitle" id="entitySubtitle">Navigieren Sie über das Menü links</p>
-            </div>
-            <div class="society-tabs" id="societyTabs"></div>
-        </div>
-
-        <div class="guideline-container" id="guidelineContainer">
-            <div class="welcome-screen" id="welcomeScreen">
-                <div class="welcome-content">
-                    <svg id="welcome-logo" class="app-logo" viewBox="0 0 246 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="welcome-logo-title welcome-logo-desc">
-                        <title id="welcome-logo-title">Diagnostischer Pfad – Icon (horizontal)</title>
-                        <desc id="welcome-logo-desc">Abstrakter Pfad mit vier leuchtenden, vernetzten Glasknotenpunkten.</desc>
-                        <g stroke-linecap="round" stroke-linejoin="round">
-                            <path fill="none" stroke="var(--logo-detail)" stroke-width="6" d="M30,85L95,60L165,92L225,55" class="QNsytJhA_0"></path>
-                            <path class="node QNsytJhA_1" fill="url(#appLogoGradient)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1.5" d="M15,85A15,15 0,1,1 45,85A15,15 0,1,1 15,85"></path>
-                            <path class="node QNsytJhA_2" fill="url(#appLogoGradient)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1.5" d="M80,60A15,15 0,1,1 110,60A15,15 0,1,1 80,60"></path>
-                            <path class="node QNsytJhA_3" fill="url(#appLogoGradient)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1.5" d="M150,92A15,15 0,1,1 180,92A15,15 0,1,1 150,92"></path>
-                            <path class="node QNsytJhA_4" fill="url(#appLogoGradient)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1.5" d="M210,55A15,15 0,1,1 240,55A15,15 0,1,1 210,55"></path>
-                            <path d="M80,45 a20,20 0 0,1 30,0" fill="none" stroke="var(--logo-detail)" stroke-width="3" opacity="0.6" class="QNsytJhA_5"></path>
-                            <path d="M210,40 a20,20 0 0,1 30,0" fill="none" stroke="var(--logo-detail)" stroke-width="2" opacity="0.4" class="QNsytJhA_6"></path>
-                        </g>
-                        <style data-made-with="vivus-instant">.QNsytJhA_0{stroke-dasharray:218 220;stroke-dashoffset:219;animation:QNsytJhA_draw 2000ms ease 0ms forwards;}.QNsytJhA_1{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 166ms forwards;}.QNsytJhA_2{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 333ms forwards;}.QNsytJhA_3{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 500ms forwards;}.QNsytJhA_4{stroke-dasharray:95 97;stroke-dashoffset:96;animation:QNsytJhA_draw 2000ms ease 666ms forwards;}.QNsytJhA_5{stroke-dasharray:34 36;stroke-dashoffset:35;animation:QNsytJhA_draw 2000ms ease 833ms forwards;}.QNsytJhA_6{stroke-dasharray:34 36;stroke-dashoffset:35;animation:QNsytJhA_draw 2000ms ease 1000ms forwards;}@keyframes QNsytJhA_draw{100%{stroke-dashoffset:0;}}</style>
-                    </svg>
-                    <h2>Willkommen bei Diagnostische Patientenpfade</h2>
-                    <p>Wählen Sie eine Tumorentität aus dem Menü, um die entsprechenden Leitlinien zur bildgebenden Diagnostik anzuzeigen.</p>
-                </div>
-            </div>
-            <div class="timeline-container" id="timelineContainer"></div>
-        </div>
-    </main>
-
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-    </div>
-
-    <div class="patient-path-fab" id="patientPathFab">
-        <i data-lucide="clipboard-list"></i>
-        <span class="path-count" id="pathCount">0</span>
-    </div>
-
-    <div class="path-modal-overlay" id="pathModalOverlay">
-        <div class="path-modal" id="pathModal">
-            <div class="path-modal-header">
-                <h2 class="path-modal-title">Diagnostischer Patientenpfad</h2>
-                <div class="path-modal-actions">
-                    <button class="path-action-btn" id="exportPathBtn">
-                        <i data-lucide="file-text"></i>
-                        <span>Als TXT</span>
-                    </button>
-                    <button class="path-action-btn" id="printPathBtn">
-                        <i data-lucide="printer"></i>
-                        <span>Drucken / PDF</span>
-                    </button>
-                    <button class="path-action-btn clear" id="clearPathBtn">
-                        <i data-lucide="trash-2"></i>
-                        <span>Pfad leeren</span>
-                    </button>
-                    <button class="path-modal-close" id="pathModalClose">
-                        <i data-lucide="x"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="path-modal-content" id="pathModalContent">
-                <div class="path-print-header" id="pathPrintHeader"></div>
-                <div class="empty-path-message" id="emptyPathMessage">
-                    <i data-lucide="list-plus"></i>
-                    <p>Fügen Sie Empfehlungen hinzu, um Ihren diagnostischen Pfad zu erstellen.</p>
-                </div>
+<body>
+    <div class="container">
+        <header class="header">
+            <img src="data/logo_icon_horizontal.svg" alt="App Logo" class="logo-horizontal">
+            <h1 class="title">Diagnostische Patientenpfade</h1>
+            <input type="text" id="searchInput" placeholder="Suche nach einem Pfad...">
+        </header>
+        <main id="mainContent" class="main-content">
+        </main>
+        <div id="detailModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <div id="modalBody"></div>
             </div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
