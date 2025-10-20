@@ -5,6 +5,14 @@ let currentGuideline = null;
 let searchTerm = '';
 let patientPath = [];
 
+const filters = {
+    modality: [],
+    strength: [],
+    cardSearch: ''
+};
+
+let currentSort = 'default';
+
 const tooltipData = {
     'AWMF-DKG': {
         'EK': 'Expertenkonsens: Starke Empfehlung der Leitliniengruppe, auch ohne hochwertige Studienlage, basierend auf klinischer Erfahrung und Konsens.',
@@ -94,7 +102,12 @@ class PatientenpfadeApp {
             printPathBtn: document.getElementById('printPathBtn'),
             exportPathBtn: document.getElementById('exportPathBtn'),
             clearPathBtn: document.getElementById('clearPathBtn'),
-            mobileNavToggle: document.getElementById('mobileNavToggle')
+            mobileNavToggle: document.getElementById('mobileNavToggle'),
+            filterBar: document.getElementById('filterBar'),
+            modalityFilter: document.getElementById('modalityFilter'),
+            strengthFilter: document.getElementById('strengthFilter'),
+            cardSearchInput: document.getElementById('cardSearchInput'),
+            sortSelect: document.getElementById('sortSelect')
         };
     }
 
@@ -120,9 +133,19 @@ class PatientenpfadeApp {
         });
 
         this.elements.timelineContainer.addEventListener('click', (e) => {
+            const card = e.target.closest('.recommendation-card');
             const icon = e.target.closest('.info-icon');
+            const justificationToggle = e.target.closest('.justification-toggle');
+            const sourceTextToggle = e.target.closest('.source-text-toggle');
+            const addToPathBtn = e.target.closest('.add-to-path-btn');
+
             if (icon) {
+                e.stopPropagation();
                 this.toggleTooltip(icon);
+            } else if (justificationToggle || sourceTextToggle || addToPathBtn) {
+                return;
+            } else if (card) {
+                card.classList.toggle('expanded');
             }
         });
 
@@ -137,6 +160,16 @@ class PatientenpfadeApp {
             if (this.activeTooltip && !e.target.closest('.info-icon')) {
                 this.hideTooltip();
             }
+        });
+
+        this.elements.cardSearchInput.addEventListener('input', (e) => {
+            filters.cardSearch = e.target.value;
+            this.renderTimelineView(currentGuideline);
+        });
+
+        this.elements.sortSelect.addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            this.renderTimelineView(currentGuideline);
         });
     }
 
@@ -324,6 +357,7 @@ class PatientenpfadeApp {
         this.elements.mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
         this.elements.welcomeScreen.classList.add('hidden');
         this.elements.timelineContainer.classList.add('active');
+        this.elements.filterBar.classList.add('visible');
     }
 
     renderSocietyTabs(guidelines) {
@@ -356,6 +390,8 @@ class PatientenpfadeApp {
         );
         if (activeTab) activeTab.classList.add('active');
         
+        this.resetFilters();
+        this.renderFilterOptions(guideline);
         this.renderTimelineView(guideline);
     }
 
@@ -363,10 +399,13 @@ class PatientenpfadeApp {
         this.elements.timelineContainer.innerHTML = '';
         
         const groupedRecommendations = this.groupRecommendationsByClinicalSituation(guideline.recommendationGroups);
+        const filteredAndSorted = this.getFilteredAndSortedRecommendations(groupedRecommendations);
         
-        Object.entries(groupedRecommendations).forEach(([situation, recommendations]) => {
-            const phaseElement = this.createPhaseElement(situation, recommendations);
-            this.elements.timelineContainer.appendChild(phaseElement);
+        Object.entries(filteredAndSorted).forEach(([situation, recommendations]) => {
+            if (recommendations.length > 0) {
+                const phaseElement = this.createPhaseElement(situation, recommendations);
+                this.elements.timelineContainer.appendChild(phaseElement);
+            }
         });
         lucide.createIcons();
     }
@@ -393,8 +432,14 @@ class PatientenpfadeApp {
         
         phaseDiv.innerHTML = `
             <div class="phase-header">
+                <div class="phase-header-content">
+                    <h3 class="phase-title">${situation}</h3>
+                    <button class="expand-toggle-btn">
+                        <i data-lucide="arrow-down-up"></i>
+                        <span>Alle umschalten</span>
+                    </button>
+                </div>
                 <div class="phase-line"></div>
-                <h3 class="phase-title">${situation}</h3>
             </div>
             <div class="recommendations-grid"></div>
         `;
@@ -404,6 +449,20 @@ class PatientenpfadeApp {
             grid.appendChild(this.createRecommendationCard(rec));
         });
         
+        const toggleBtn = phaseDiv.querySelector('.expand-toggle-btn');
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const cards = grid.querySelectorAll('.recommendation-card');
+            const isAnyExpanded = Array.from(cards).some(card => card.classList.contains('expanded'));
+            cards.forEach(card => {
+                if (isAnyExpanded) {
+                    card.classList.remove('expanded');
+                } else {
+                    card.classList.add('expanded');
+                }
+            });
+        });
+
         return phaseDiv;
     }
 
@@ -444,52 +503,54 @@ class PatientenpfadeApp {
                 </div>
             </div>
             <div class="recommendation-body">
-                <div class="recommendation-details">
-                    <div class="detail-item">
-                        <span class="detail-label">Region:</span>
-                        <span class="detail-value">${recommendation.anatomicRegion}</span>
-                    </div>
-                    ${recommendation.details ? `
+                <div class="recommendation-body-content">
+                    <div class="recommendation-details">
                         <div class="detail-item">
-                            <span class="detail-label">Details:</span>
-                            <span class="detail-value">${recommendation.details}</span>
+                            <span class="detail-label">Region:</span>
+                            <span class="detail-value">${recommendation.anatomicRegion}</span>
                         </div>
-                    ` : ''}
-                    <div class="detail-item">
-                        <span class="detail-label">Stadium:</span>
-                        <span class="detail-value">${recommendation.clinicalStage}</span>
-                    </div>
-                    ${recommendation.patientGroup ? `
+                        ${recommendation.details ? `
+                            <div class="detail-item">
+                                <span class="detail-label">Details:</span>
+                                <span class="detail-value">${recommendation.details}</span>
+                            </div>
+                        ` : ''}
                         <div class="detail-item">
-                            <span class="detail-label">Patientengruppe:</span>
-                            <span class="detail-value">${recommendation.patientGroup}</span>
+                            <span class="detail-label">Stadium:</span>
+                            <span class="detail-value">${recommendation.clinicalStage}</span>
                         </div>
+                        ${recommendation.patientGroup ? `
+                            <div class="detail-item">
+                                <span class="detail-label">Patientengruppe:</span>
+                                <span class="detail-value">${recommendation.patientGroup}</span>
+                            </div>
+                        ` : ''}
+                        <div class="detail-item">
+                            <span class="detail-label">Häufigkeit:</span>
+                            <span class="detail-value">${recommendation.frequency}</span>
+                        </div>
+                    </div>
+                    <div class="justification-container">
+                        <button class="justification-toggle">
+                            Begründung anzeigen
+                            <i data-lucide="chevron-down"></i>
+                        </button>
+                        <div class="justification-content">
+                            <p>${recommendation.justification}</p>
+                        </div>
+                    </div>
+                    ${recommendation.sourceText ? `
+                    <div class="source-text-container">
+                        <button class="source-text-toggle">
+                            Originaltext anzeigen
+                            <i data-lucide="chevron-down"></i>
+                        </button>
+                        <div class="source-text-content">
+                            <p>${recommendation.sourceText}</p>
+                        </div>
+                    </div>
                     ` : ''}
-                    <div class="detail-item">
-                        <span class="detail-label">Häufigkeit:</span>
-                        <span class="detail-value">${recommendation.frequency}</span>
-                    </div>
                 </div>
-                <div class="justification-container">
-                    <button class="justification-toggle">
-                        Begründung anzeigen
-                        <i data-lucide="chevron-down"></i>
-                    </button>
-                    <div class="justification-content">
-                        <p>${recommendation.justification}</p>
-                    </div>
-                </div>
-                ${recommendation.sourceText ? `
-                <div class="source-text-container">
-                    <button class="source-text-toggle">
-                        Originaltext anzeigen
-                        <i data-lucide="chevron-down"></i>
-                    </button>
-                    <div class="source-text-content">
-                        <p>${recommendation.sourceText}</p>
-                    </div>
-                </div>
-                ` : ''}
             </div>
         `;
 
@@ -497,7 +558,8 @@ class PatientenpfadeApp {
         const justificationContent = card.querySelector('.justification-content');
         const justificationContainer = card.querySelector('.justification-container');
 
-        justificationToggle.addEventListener('click', () => {
+        justificationToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
             const isExpanded = justificationContainer.classList.toggle('expanded');
             if (isExpanded) {
                 justificationContent.style.maxHeight = justificationContent.scrollHeight + 'px';
@@ -512,7 +574,8 @@ class PatientenpfadeApp {
         if (sourceTextToggle) {
             const sourceTextContent = card.querySelector('.source-text-content');
             const sourceTextContainer = card.querySelector('.source-text-container');
-            sourceTextToggle.addEventListener('click', () => {
+            sourceTextToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const isExpanded = sourceTextContainer.classList.toggle('expanded');
                 if (isExpanded) {
                     sourceTextContent.style.maxHeight = sourceTextContent.scrollHeight + 'px';
@@ -525,7 +588,10 @@ class PatientenpfadeApp {
         }
 
         const addToPathBtn = card.querySelector('.add-to-path-btn');
-        addToPathBtn.addEventListener('click', () => this.togglePathItem(recommendation, addToPathBtn));
+        addToPathBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.togglePathItem(recommendation, addToPathBtn);
+        });
         
         return card;
     }
@@ -818,6 +884,112 @@ class PatientenpfadeApp {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    }
+
+    resetFilters() {
+        filters.modality = [];
+        filters.strength = [];
+        filters.cardSearch = '';
+        currentSort = 'default';
+        this.elements.cardSearchInput.value = '';
+        this.elements.sortSelect.value = 'default';
+    }
+
+    renderFilterOptions(guideline) {
+        const allRecs = Object.values(guideline.recommendationGroups).flat();
+        const modalities = [...new Set(allRecs.map(rec => rec.modality))].sort();
+
+        this.elements.modalityFilter.innerHTML = '';
+        modalities.forEach(modality => {
+            const btn = document.createElement('button');
+            btn.className = 'filter-btn';
+            btn.textContent = modality;
+            btn.dataset.filter = 'modality';
+            btn.dataset.value = modality;
+            btn.addEventListener('click', () => this.handleFilterClick(btn));
+            this.elements.modalityFilter.appendChild(btn);
+        });
+
+        this.elements.strengthFilter.innerHTML = '';
+        const strengthGroups = {
+            'empfohlen': 'Empfohlen',
+            'kann-erwogen-werden': 'Kann',
+            'nicht-empfohlen': 'Nicht Empfohlen'
+        };
+        Object.entries(strengthGroups).forEach(([key, value]) => {
+            const btn = document.createElement('button');
+            btn.className = 'filter-btn';
+            btn.textContent = value;
+            btn.dataset.filter = 'strength';
+            btn.dataset.value = key;
+            btn.addEventListener('click', () => this.handleFilterClick(btn));
+            this.elements.strengthFilter.appendChild(btn);
+        });
+    }
+
+    handleFilterClick(button) {
+        button.classList.toggle('active');
+        const filterType = button.dataset.filter;
+        const value = button.dataset.value;
+
+        const index = filters[filterType].indexOf(value);
+        if (index > -1) {
+            filters[filterType].splice(index, 1);
+        } else {
+            filters[filterType].push(value);
+        }
+        this.renderTimelineView(currentGuideline);
+    }
+
+    getFilteredAndSortedRecommendations(groupedRecommendations) {
+        const result = {};
+        const strengthOrder = {
+            'soll': 1,
+            'empfohlen': 1,
+            'obligat': 1,
+            'kann-erwogen-werden': 2,
+            'optional': 2,
+            'fakultativ': 2,
+            'nicht-empfohlen': 3,
+            'sollte-nicht': 3
+        };
+
+        for (const situation in groupedRecommendations) {
+            let recommendations = groupedRecommendations[situation];
+
+            if (filters.modality.length > 0) {
+                recommendations = recommendations.filter(rec => filters.modality.includes(rec.modality));
+            }
+
+            if (filters.strength.length > 0) {
+                recommendations = recommendations.filter(rec => {
+                    const strengthClass = this.getStrengthClass(rec.recommendationStrength);
+                    return filters.strength.includes(strengthClass);
+                });
+            }
+
+            if (filters.cardSearch) {
+                const searchLower = filters.cardSearch.toLowerCase();
+                recommendations = recommendations.filter(rec => 
+                    rec.procedure.toLowerCase().includes(searchLower) ||
+                    rec.justification.toLowerCase().includes(searchLower) ||
+                    (rec.sourceText && rec.sourceText.toLowerCase().includes(searchLower))
+                );
+            }
+
+            if (currentSort === 'strength') {
+                recommendations.sort((a, b) => {
+                    const classA = this.getStrengthClass(a.recommendationStrength);
+                    const classB = this.getStrengthClass(b.recommendationStrength);
+                    return (strengthOrder[classA] || 99) - (strengthOrder[classB] || 99);
+                });
+            } else if (currentSort === 'procedure') {
+                recommendations.sort((a, b) => a.procedure.localeCompare(b.procedure));
+            }
+            
+            result[situation] = recommendations;
+        }
+        return result;
     }
 }
 

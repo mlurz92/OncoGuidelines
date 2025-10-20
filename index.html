@@ -75,6 +75,30 @@
                 <p class="entity-subtitle" id="entitySubtitle">Navigieren Sie über das Menü links</p>
             </div>
             <div class="society-tabs" id="societyTabs"></div>
+            <div class="filter-bar" id="filterBar">
+                <div class="filter-group">
+                    <label class="filter-label">Modalität:</label>
+                    <div class="filter-options" id="modalityFilter"></div>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Empfehlung:</label>
+                    <div class="filter-options" id="strengthFilter"></div>
+                </div>
+                <div class="filter-group search-sort-group">
+                    <div class="card-search-wrapper">
+                        <i data-lucide="search" class="card-search-icon"></i>
+                        <input type="text" id="cardSearchInput" placeholder="In Karten suchen...">
+                    </div>
+                    <div class="sort-wrapper">
+                         <i data-lucide="arrow-up-down" class="sort-icon"></i>
+                        <select id="sortSelect">
+                            <option value="default">Standard-Sortierung</option>
+                            <option value="strength">Nach Empfehlung</option>
+                            <option value="procedure">Alphabetisch</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="guideline-container" id="guidelineContainer">

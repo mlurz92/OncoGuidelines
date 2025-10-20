@@ -28,7 +28,8 @@ Die Anwendung basiert auf einer sorgfältig kuratierten Wissensdatenbank, die ev
         *   Therapiekontrolle
         *   Nachsorge
         *   Rezidivdiagnostik
-    *   **Detaillierte Empfehlungskarten:** Jede Empfehlung wird auf einer interaktiven "Karte" dargestellt, die alle relevanten Informationen auf einen Blick zusammenfasst: Verfahren, Empfehlungsstärke (farblich kodiert), Begründung und Originaltext aus der Leitlinie.
+    *   **Filter & Sortierung:** Innerhalb einer Leitlinie können die Empfehlungen nach Modalität (CT, MRT etc.) und Empfehlungsstärke gefiltert sowie alphabetisch oder nach Relevanz sortiert werden, um die Ansicht zu personalisieren.
+    *   **Interaktive Empfehlungskarten:** Jede Empfehlung wird auf einer interaktiven "Karte" dargestellt, die standardmäßig nur die wichtigsten Informationen anzeigt. Ein Klick klappt die Karte auf und offenbart alle relevanten Details: Verfahren, Empfehlungsstärke (farblich kodiert), Begründung und Originaltext aus der Leitlinie.
 
 *   **Alleinstellungsmerkmal – Der individuelle Patientenpfad:**
     *   **Erstellen:** Anwender können per Klick relevante Empfehlungen aus verschiedenen Leitlinien für einen spezifischen Patientenfall zu einem individuellen "Diagnostischen Patientenpfad" zusammensetzen.
@@ -49,19 +50,17 @@ Das Kernstück der Anwendung ist die intuitive Darstellung diagnostischer Pfade 
 
 Die Anwendung ist modular und klar strukturiert. Das Hauptverzeichnis `OncoGuidelines/` enthält alle für den Betrieb notwendigen Dateien:
 
-```
 OncoGuidelines/
 ├── index.html
 ├── manifest.json
 ├── script.js
 ├── style.css
 └── data/
-    ├── logo_icon_horizontal.svg
-    ├── JSON-Schema.json
-    ├── logo.svg
-    ├── OncoGuidelines.json
-    └── Tabellen.md
-```
+├── logo_icon_horizontal.svg
+├── JSON-Schema.json
+├── logo.svg
+├── OncoGuidelines.json
+└── Tabellen.md
 
 #### 3. Architektur und Technologien
 
@@ -114,20 +113,22 @@ Der rechte, größere Bereich dient der Darstellung der Leitlinieninhalte.
 *   **Header**: Ein "sticky" Header bleibt beim Scrollen sichtbar und enthält:
     *   **Titel der Entität**: Zeigt den Namen der ausgewählten Tumorentität und ggf. des Subtyps an.
     *   **Leitlinien-Tabs**: Reiter für jede verfügbare Fachgesellschaft (z.B. "DGHO", "AWMF-DKG"). Der aktive Tab ist visuell hervorgehoben und unterstreicht die aktive Leitlinie mit einer farbigen Linie in der jeweiligen Farbe der Fachgesellschaft (Blau für DGHO, Grün für AWMF-DKG, Orange für ESMO).
+    *   **Filter- & Sortierleiste**: Unterhalb der Tabs befindet sich eine Leiste mit interaktiven Optionen, um die angezeigten Empfehlungen zu verfeinern. Nutzer können nach Modalität (z.B. CT, MRT) und Empfehlungsstärke filtern. Zusätzlich ermöglicht ein Suchfeld die Volltextsuche innerhalb der Karten, und ein Dropdown-Menü erlaubt die Sortierung nach Standard, Empfehlungsstärke oder alphabetisch.
 *   **Willkommensbildschirm**: Der initiale Zustand des Hauptbereichs, der den Nutzer mit dem Logo und einer kurzen Anleitung begrüßt.
 *   **Timeline-Container**: Nach Auswahl einer Entität wird hier der Inhalt dargestellt.
-    *   **Klinische Phasen**: Die Empfehlungen sind chronologisch nach klinischen Phasen (z.B. "Erstdiagnose/Staging", "Nachsorge") gruppiert. Jede Phase wird durch eine Überschrift eingeleitet, die auf einer durchgehenden horizontalen Linie liegt, um den Zeitstrahl-Charakter zu unterstreichen.
+    *   **Klinische Phasen**: Die Empfehlungen sind chronologisch nach klinischen Phasen (z.B. "Erstdiagnose/Staging", "Nachsorge") gruppiert. Jede Phase wird durch eine Überschrift eingeleitet, die auf einer durchgehenden horizontalen Linie liegt, um den Zeitstrahl-Charakter zu unterstreichen. Ein "Alle umschalten"-Button erlaubt das gleichzeitige Auf- und Zuklappen aller Karten einer Phase.
     *   **Empfehlungs-Grid**: Innerhalb jeder Phase werden die Empfehlungskarten in einem responsiven Grid-Layout angeordnet.
 
 ##### 5.4. Die Empfehlungskarte
 
-Die Empfehlungskarte ist das zentrale UI-Element zur Darstellung einer einzelnen diagnostischen Maßnahme. Sie ist hochgradig strukturiert, um eine schnelle und präzise Informationsaufnahme zu ermöglichen.
+Die Empfehlungskarte ist das zentrale UI-Element zur Darstellung einer einzelnen diagnostischen Maßnahme. Sie ist hochgradig strukturiert und für eine schnelle Informationsaufnahme optimiert, indem sie standardmäßig eine Kompaktansicht bietet.
 
+*   **Kompakt- & Detailansicht**: Jede Karte wird zunächst in einer kompakten Ansicht angezeigt, die nur den Header mit den wichtigsten Informationen enthält. Ein Klick auf die Karte klappt den Detailbereich mit einer sanften Animation auf, um alle weiteren Informationen wie Region, Begründung und Originaltext preiszugeben. Dies sorgt für eine deutlich bessere Übersichtlichkeit.
 *   **Struktur und Hervorhebung**: Jede Karte hat eine farbige obere Bordüre, deren Farbe die Verbindlichkeit der Empfehlung signalisiert:
     *   **Grün**: Empfohlen / Soll / Obligat
     *   **Gelb/Orange**: Kann erwogen werden / Optional / Fakultativ
     *   **Rot**: Nicht empfohlen
-*   **Karten-Header**:
+*   **Karten-Header (Kompaktansicht)**:
     *   **Verfahrensname**: Prominent in großer, fetter Schrift (z.B. "MRT des Beckens").
     *   **Empfehlungs-Metadaten**: Direkt unter dem Verfahrensnamen befindet sich eine Zeile mit den wichtigsten Bewertungskriterien:
         *   **Empfehlungsstärke (Text)**: Der exakte Wortlaut (z.B. "Soll", "Kann erwogen werden") in der zur Kategorie passenden Farbe.
@@ -136,8 +137,8 @@ Die Empfehlungskarte ist das zentrale UI-Element zur Darstellung einer einzelnen
     *   **Aktionen**: Auf der rechten Seite befinden sich zwei interaktive Elemente:
         *   **Stärke-Indikator**: Ein großer Kreis, der die Empfehlungsstärke durch ein Symbol (✓, ○, ✗) und die entsprechende Farbe visuell zusammenfasst.
         *   **Zum Pfad hinzufügen**: Ein Button mit einem Plus-Icon, das sich bei Hinzufügen zum Patientenpfad in ein grünes Häkchen-Icon ändert.
-*   **Detail-Bereich**: Eine klar strukturierte Tabelle listet weitere Details auf: Region, Details, Stadium, Patientengruppe, Häufigkeit.
-*   **Ausklappbare Bereiche**:
+*   **Detail-Bereich (wird aufgeklappt)**: Eine klar strukturierte Tabelle listet weitere Details auf: Region, Details, Stadium, Patientengruppe, Häufigkeit.
+*   **Ausklappbare Bereiche (innerhalb des Detail-Bereichs)**:
     *   **Begründung**: Ein Button mit dem Text "Begründung anzeigen" (in einem dezenten Blau) klappt bei Klick einen Bereich mit der detaillierten Begründung aus der Leitlinie auf. Ein Chevron-Icon visualisiert den Zustand (offen/geschlossen).
     *   **Originaltext**: Ein weiterer blauer Button "Originaltext anzeigen" klappt den exakten Quelltext aus der Leitlinie (`sourceText`) auf. Dieser wird zur klaren Abgrenzung kursiv und mit einem linken Randbalken dargestellt.
 
@@ -163,7 +164,7 @@ Das Design orientiert sich am Corporate Design des Klinikums St. Georg Leipzig u
 **Sekundär- und Funktionsfarben**
 
 | Farbe | Hex-Code (Hell / Dunkel) | Verwendung |
-| :--- | :--- | :--- |
+| :--- | :--- | :--- | :--- |
 | **Erfolg (Grün)** | `#10b981` | Positive Empfehlungen (Soll, Empfohlen). |
 | **Warnung (Gelb)** | `#f59e0b` | Neutrale/optionale Empfehlungen (Kann erwogen werden). |
 | **Gefahr (Rot)** | `#ef4444` | Negative Empfehlungen (Nicht empfohlen), "Pfad leeren"-Button. |
@@ -177,14 +178,14 @@ Das Design orientiert sich am Corporate Design des Klinikums St. Georg Leipzig u
 *   **Theming**: Wechsel zwischen Hell- und Dunkelmodus per Klick. Die Auswahl wird im `localStorage` des Browsers gespeichert. Tastaturkürzel: `Strg+D`.
 *   **Suche**: Filtert die Navigationsliste in Echtzeit basierend auf der Eingabe. Sucht sowohl in Entitäts- als auch in Subtyp-Namen.
 *   **Navigation**: Klicks auf Entitäten/Subtypen laden die entsprechenden Leitlinien dynamisch in den Hauptbereich. Der Zustand der Navigation (aktive Elemente, ausgeklappte Gruppen) wird visuell dargestellt.
-*   **Leitlinien-Darstellung**: Zeigt die Empfehlungen gruppiert nach klinischer Phase an. Wechsel zwischen verschiedenen Leitlinien (Fachgesellschaften) über Tabs ist möglich.
+*   **Leitlinien-Darstellung**: Zeigt die Empfehlungen gruppiert nach klinischer Phase an. Wechsel zwischen verschiedenen Leitlinien (Fachgesellschaften) über Tabs ist möglich. Die Ansicht kann über eine Filterleiste nach Modalität, Empfehlungsstärke und Freitext durchsucht und nach verschiedenen Kriterien sortiert werden.
 *   **Patientenpfad-Management**:
     *   **Hinzufügen/Entfernen**: Empfehlungen können per Klick zu einem persönlichen Pfad hinzugefügt oder daraus entfernt werden. Der Zustand wird auf der Karte und am FAB-Zähler reflektiert.
     *   **Anzeigen**: Der zusammengestellte Pfad kann in einem Modal angezeigt werden.
     *   **Leeren**: Der gesamte Pfad kann mit einem Klick gelöscht werden.
     *   **Exportieren**: Der Pfad kann als strukturierte `.txt`-Datei exportiert werden, die eine Checkliste der Maßnahmen sowie Metadaten zur Leitlinie enthält.
     *   **Drucken**: Eine druckoptimierte Ansicht des Pfades wird generiert, die auch als PDF gespeichert werden kann.
-*   **Interaktive Karten**: Begründungen und Originaltexte können auf jeder Karte individuell ein- und ausgeklappt werden, um die Informationsdichte nach Bedarf zu steuern. Die Badges für Evidenzlevel und Empfehlungsgrad sind ebenfalls interaktiv und zeigen bei Klick detaillierte Erklärungen an.
+*   **Interaktive Karten**: Die Karten sind standardmäßig eingeklappt und zeigen nur eine Zusammenfassung. Ein Klick klappt die Karte auf, um alle Details anzuzeigen. Innerhalb der Detailansicht können Begründungen und Originaltexte individuell ein- und ausgeklappt werden. Die Badges für Evidenzlevel und Empfehlungsgrad sind ebenfalls interaktiv und zeigen bei Klick detaillierte Erklärungen an.
 
 #### 8. Zusammenfassung
 
