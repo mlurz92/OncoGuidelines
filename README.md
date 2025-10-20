@@ -1,5 +1,44 @@
 ### Dokumentation: Diagnostische Patientenpfade
 
+#### Kompakte Anwendungsbeschreibung
+
+#### Datenbasis der Anwendung
+
+Die Anwendung basiert auf einer sorgfältig kuratierten Wissensdatenbank, die evidenzbasierte Leitlinienempfehlungen zur bildgebenden Diagnostik in der Onkologie bündelt.
+
+*   **Fachgesellschaften:** Die Inhalte stammen von **3** führenden europäischen und deutschen Fachgesellschaften:
+    *   **AWMF-DKG** (Arbeitsgemeinschaft der Wissenschaftlichen Medizinischen Fachgesellschaften / Deutsche Krebsgesellschaft)
+    *   **DGHO** (Deutsche Gesellschaft für Hämatologie und Medizinische Onkologie)
+    *   **ESMO** (European Society for Medical Oncology)
+*   **Die Datenbank umfasst:**
+    *   Haupttumorentitäten (z.B. Lungenkarzinom, Mammakarzinom)
+    *   Spezifische Subtypen und Leitlinien-Gruppen (z.B. Kleinzelliges Lungenkarzinom, Frühes Mammakarzinom)
+    *   Einzelne, detaillierte Empfehlungen für diagnostische Verfahren
+
+#### Funktionalität der Anwendung
+
+"Diagnostische Patientenpfade" ist ein interaktives Nachschlagewerk, das medizinischem Fachpersonal einen schnellen und strukturierten Zugriff auf diese Leitlinien ermöglicht.
+
+*   **Zweck:** Unterstützung bei klinischen Entscheidungen in der bildgebenden Diagnostik durch eine übersichtliche und praxisnahe Aufbereitung aktueller Leitlinien.
+*   **Kernfunktionen:**
+    *   **Schnellsuche & Navigation:** Einfaches und schnelles Auffinden von Leitlinien für eine bestimmte Tumorentität über eine Suchfunktion und eine klare Menüstruktur.
+    *   **Strukturierte Darstellung:** Die Empfehlungen werden nicht als Fließtext, sondern übersichtlich nach klinischen Situationen gegliedert angezeigt, z.B.:
+        *   Früherkennung / Screening
+        *   Erstdiagnose / Staging
+        *   Therapiekontrolle
+        *   Nachsorge
+        *   Rezidivdiagnostik
+    *   **Detaillierte Empfehlungskarten:** Jede Empfehlung wird auf einer interaktiven "Karte" dargestellt, die alle relevanten Informationen auf einen Blick zusammenfasst: Verfahren, Empfehlungsstärke (farblich kodiert), Begründung und Originaltext aus der Leitlinie.
+
+*   **Alleinstellungsmerkmal – Der individuelle Patientenpfad:**
+    *   **Erstellen:** Anwender können per Klick relevante Empfehlungen aus verschiedenen Leitlinien für einen spezifischen Patientenfall zu einem individuellen "Diagnostischen Patientenpfad" zusammensetzen.
+    *   **Verwalten:** Der erstellte Pfad kann jederzeit eingesehen, bearbeitet und geleert werden.
+    *   **Exportieren & Teilen:** Der Pfad lässt sich als übersichtliche Textdatei (TXT) exportieren oder direkt als druckfreundliche Version (PDF) ausgeben, um ihn beispielsweise in die Patientenakte zu integrieren oder im Team zu besprechen.
+
+*   **Benutzerfreundlichkeit:**
+    *   Die Anwendung ist für alle Endgeräte (PC, Tablet, Smartphone) optimiert.
+    *   Ein heller und ein dunkler Anzeigemodus sorgen für angenehmes Arbeiten bei allen Lichtverhältnissen.
+
 #### 1. Einleitung
 
 "Diagnostische Patientenpfade" ist eine hochspezialisierte Progressive Web App (PWA), die als interaktives, klinisches Nachschlagewerk für die bildgebende Diagnostik in der Onkologie konzipiert wurde. Die Anwendung richtet sich an medizinisches Fachpersonal wie Radiologen, Onkologen und Kliniker und hat zum Ziel, einen schnellen, strukturierten und evidenzbasierten Zugriff auf die aktuellen Leitlinienempfehlungen führender Fachgesellschaften (DGHO, AWMF-DKG, ESMO) zu ermöglichen.
