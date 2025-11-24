@@ -1,93 +1,90 @@
-let oncoData = null;
-let currentEntity = null;
-let currentSubtype = null;
-let currentGuideline = null;
-let searchTerm = '';
-let patientPath = [];
+/**
+ * Diagnostische Patientenpfade - Application Logic
+ * Zentrale Steuerungsdatei für die Web-Applikation.
+ * Behandelt Datenladung, Rendering, Interaktionen, State-Management
+ * und die Logik für den diagnostischen Patientenpfad.
+ */
 
-const filters = {
-    modality: [],
-    strength: [],
-    cardSearch: ''
-};
-
-let currentSort = 'default';
-
-const tooltipData = {
+// Definitionen für Tooltips (Evidenzlevel und Empfehlungsgrade)
+const TOOLTIP_DATA = {
     'AWMF-DKG': {
-        'EK': 'Expertenkonsens: Starke Empfehlung der Leitliniengruppe, auch ohne hochwertige Studienlage, basierend auf klinischer Erfahrung und Konsens.',
-        'A': 'Starker Empfehlungsgrad (Soll): Eine Handlung oder Maßnahme, die in jedem Fall durchgeführt werden soll.',
-        'B': 'Empfehlungsgrad (Sollte): Eine Handlung oder Maßnahme, die im Regelfall durchgeführt werden sollte.',
-        'C': 'Empfehlungsgrad (Kann): Eine Handlung oder Maßnahme, deren Durchführung im Ermessen des Behandlers liegt.',
-        'D': 'Empfehlungsgrad (Soll nicht): Eine Handlung oder Maßnahme, die im Regelfall nicht durchgeführt werden sollte.',
-        '0': 'Offener Empfehlungsgrad (Kann): Eine Handlung oder Maßnahme, deren Durchführung im Ermessen des Behandlers liegt.',
-        'B/0': 'Empfehlungsgrad (Sollte/Kann): Eine Handlung oder Maßnahme, deren Durchführung im Regelfall erwogen werden sollte.',
-        'I': 'Evidenzlevel I: Evidenz aus Meta-Analysen oder mindestens einer randomisierten kontrollierten Studie (RCT).',
-        'II': 'Evidenzlevel II: Evidenz aus mindestens einer gut angelegten kontrollierten Studie ohne Randomisierung oder anderen quasi-experimentellen Studien.',
-        'III': 'Evidenzlevel III: Evidenz aus gut angelegten, nicht-experimentellen deskriptiven Studien (z.B. Vergleichsstudien, Korrelationsstudien, Fall-Kontroll-Studien).',
-        'IV': 'Evidenzlevel IV: Evidenz aus Berichten/Meinungen von Expertenkreisen, Konsensus-Konferenzen und/oder klinischer Erfahrung anerkannter Autoritäten.',
-        'V': 'Evidenzlevel V: Evidenz basiert auf nicht-analytischen Studien (z.B. Fallberichte, Fallserien).',
-        '1': 'Evidenzlevel 1 (Oxford): Systematische Reviews von randomisierten kontrollierten Studien (RCTs) oder einzelne große RCTs.',
-        '2': 'Evidenzlevel 2 (Oxford): Kohorten- oder Fall-Kontroll-Studien, idealerweise von mehr als einem Zentrum oder einer Forschungsgruppe.',
-        '3': 'Evidenzlevel 3 (Oxford): Fallserien ohne Kontrollgruppe oder Expertenmeinungen.',
-        '4': 'Evidenzlevel 4 (Oxford): Expertenmeinungen ohne explizite kritische Bewertung, oder basierend auf Physiologie oder Laborforschung.',
-        '5': 'Evidenzlevel 5 (Oxford): Fallberichte oder klinische Erfahrung ohne systematische Analyse.',
-        '1a': 'Evidenzlevel 1a: Systematische Übersichtsarbeit von homogenen randomisierten, kontrollierten Studien (RCTs).',
-        '1b': 'Evidenzlevel 1b: Einzelne randomisierte, kontrollierte Studie (RCT).',
-        '2a': 'Evidenzlevel 2a: Systematische Übersichtsarbeit von homogenen Kohortenstudien.',
-        '2b': 'Evidenzlevel 2b: Einzelne Kohortenstudie oder minderwertige RCT.',
-        '3a': 'Evidenzlevel 3a: Systematische Übersichtsarbeit von homogenen Fall-Kontroll-Studien.',
-        '3b': 'Evidenzlevel 3b: Einzelne Fall-Kontroll-Studie.',
-        '2+': 'Evidenzlevel 2+ (SIGN): Systematische Reviews von Kohorten- oder Fall-Kontroll-Studien mit sehr geringem Verzerrungsrisiko.',
-        '2++': 'Evidenzlevel 2++ (SIGN): Hochwertige systematische Reviews von Kohorten- oder Fall-Kontroll-Studien.',
-        '1-': 'Evidenzlevel 1- (SIGN): RCTs mit hohem Verzerrungsrisiko.',
-        '2-': 'Evidenzlevel 2- (SIGN): Nicht-analytische Studien, z.B. Fallberichte, Fallserien.',
-        '1+': 'Evidenzlevel 1+ (SIGN): RCTs mit geringem Verzerrungsrisiko.',
-        '⊕⊕⊕⊕': 'Hohe Evidenzqualität (GRADE): Weitere Forschung wird die Einschätzung des Effekts sehr wahrscheinlich nicht ändern.',
-        '⊕⊕⊕⊝': 'Moderate Evidenzqualität (GRADE): Weitere Forschung kann die Einschätzung des Effekts beeinflussen und könnte diese ändern.',
-        '⊕⊕⊝⊝': 'Niedrige Evidenzqualität (GRADE): Weitere Forschung wird die Einschätzung des Effekts sehr wahrscheinlich ändern.',
-        '⊕⊝⊝⊝': 'Sehr niedrige Evidenzqualität (GRADE): Jede Einschätzung des Effekts ist unsicher.',
-        '⊕⊕⊝⊝ low': 'Niedrige Evidenzqualität (GRADE): Weitere Forschung wird die Einschätzung des Effekts sehr wahrscheinlich ändern.',
-        '⊕⊝⊝⊝ very low': 'Sehr niedrige Evidenzqualität (GRADE): Jede Einschätzung des Effekts ist unsicher.'
+        'EK': 'Expertenkonsens: Starke Empfehlung der Leitliniengruppe, basierend auf klinischer Erfahrung und Konsens.',
+        'A': 'Starke Empfehlung (Soll): Die Maßnahme soll durchgeführt werden (hoher Nutzen, geringes Risiko).',
+        'B': 'Empfehlung (Sollte): Die Maßnahme sollte durchgeführt werden (mäßiger Nutzen, Nutzen überwiegt Risiko).',
+        '0': 'Empfehlung offen (Kann): Die Maßnahme kann erwogen werden (Nutzen und Risiko ausgeglichen oder unsicher).',
+        'C': 'Empfehlung offen (Kann): Die Maßnahme kann erwogen werden.',
+        '1': 'Evidenzlevel 1: Systematische Reviews von RCTs oder einzelne große RCTs.',
+        '2': 'Evidenzlevel 2: Kohortenstudien oder Fall-Kontroll-Studien.',
+        '3': 'Evidenzlevel 3: Fallserien oder nicht-analytische Studien.',
+        '4': 'Evidenzlevel 4: Expertenmeinung.',
+        '1a': 'Evidenzlevel 1a: Systematische Übersichtsarbeit von RCTs.',
+        '1b': 'Evidenzlevel 1b: Einzelne RCT.',
+        '2a': 'Evidenzlevel 2a: Systematische Übersichtsarbeit von Kohortenstudien.',
+        '2b': 'Evidenzlevel 2b: Einzelne Kohortenstudie oder schlechtere RCT.',
+        '3a': 'Evidenzlevel 3a: Systematische Übersichtsarbeit von Fall-Kontroll-Studien.',
+        '3b': 'Evidenzlevel 3b: Einzelne Fall-Kontroll-Studie.'
     },
     'ESMO': {
-        'I': 'Level of Evidence I: Evidenz aus mindestens einer großen, randomisierten, kontrollierten Studie (RCT) oder einer Meta-Analyse von hochwertigen RCTs.',
-        'II': 'Level of Evidence II: Evidenz aus kleinen RCTs oder Meta-Analysen von RCTs, die statistisch nicht signifikant waren oder leichte methodische Schwächen aufweisen.',
-        'III': 'Level of Evidence III: Evidenz aus prospektiven, vergleichenden Kohortenstudien.',
-        'IV': 'Level of Evidence IV: Evidenz aus retrospektiven Kohortenstudien oder Fall-Kontroll-Studien.',
-        'V': 'Level of Evidence V: Evidenz aus Studien ohne Kontrollgruppe, Fallberichten oder Expertenmeinungen.',
-        'A': 'Grade of Recommendation A: Starke Evidenz für die Wirksamkeit mit erheblichem klinischem Nutzen; dringend empfohlen.',
-        'B': 'Grade of Recommendation B: Starke oder moderate Evidenz für die Wirksamkeit, aber mit begrenztem klinischem Nutzen; generell empfohlen.',
-        'C': 'Grade of Recommendation C: Moderate Evidenz für die Wirksamkeit, aber der Nutzen ist klein oder vergleichbar mit anderen Ansätzen; optional.',
-        'D': 'Grade of Recommendation D: Moderate Evidenz gegen die Wirksamkeit oder für eine Schädlichkeit; generell nicht empfohlen.',
-        'E': 'Grade of Recommendation E: Starke Evidenz gegen die Wirksamkeit oder für eine Schädlichkeit; niemals empfohlen.'
+        'I': 'Level I: Evidenz aus mindestens einer großen randomisierten, kontrollierten Studie.',
+        'II': 'Level II: Evidenz aus kleinen randomisierten Studien oder großen prospektiven Kohortenstudien.',
+        'III': 'Level III: Evidenz aus retrospektiven oder Fall-Kontroll-Studien.',
+        'IV': 'Level IV: Evidenz aus Fallserien ohne Kontrollgruppe.',
+        'V': 'Level V: Expertenmeinung ohne explizite kritische Bewertung.',
+        'A': 'Grad A: Starke Evidenz für Wirksamkeit mit erheblichem klinischen Nutzen (Dringend empfohlen).',
+        'B': 'Grad B: Starke oder moderate Evidenz für Wirksamkeit mit begrenztem klinischen Nutzen (Generell empfohlen).',
+        'C': 'Grad C: Unzureichende Evidenz für Wirksamkeit oder kleiner klinischer Nutzen (Optional).',
+        'D': 'Grad D: Moderate Evidenz gegen Wirksamkeit (Generell nicht empfohlen).',
+        'E': 'Grad E: Starke Evidenz gegen Wirksamkeit (Niemals empfohlen).'
     },
     'DGHO': {
-        '[1]': 'Dies ist eine direkte Quellenangabe aus der Leitlinie. Für Details siehe Originalquelle.',
-        '[23]': 'Dies ist eine direkte Quellenangabe aus der Leitlinie. Für Details siehe Originalquelle.'
+        'Standard': 'Empfohlen als medizinischer Standard.',
+        'Option': 'Kann als Option in Betracht gezogen werden.',
+        'Experimentell': 'Nur innerhalb von Studien empfohlen.',
+        '[1]': 'Siehe Originalquelle für Details.',
+        '[23]': 'Siehe Originalquelle für Details.'
     }
 };
 
 class PatientenpfadeApp {
     constructor() {
-        this.activeTooltip = null;
-        this.initializeElements();
-        this.attachEventListeners();
-        this.initializeLucideIcons();
-        this.loadData();
-    }
+        // Application State
+        this.data = null;
+        this.state = {
+            currentEntity: null,
+            currentSubtype: null,
+            currentGuideline: null,
+            searchTerm: '',
+            filters: {
+                modality: new Set(),
+                strength: new Set(),
+                textSearch: ''
+            },
+            sortMethod: 'default', // 'default', 'strength', 'alphabetical'
+            patientPath: [],
+            darkMode: localStorage.getItem('theme') === 'dark'
+        };
 
-    initializeElements() {
-        this.elements = {
+        this.activeTooltip = null;
+
+        // DOM Elements Cache
+        this.dom = {
+            body: document.body,
             themeToggle: document.getElementById('themeToggle'),
             sidebar: document.getElementById('sidebar'),
             sidebarContent: document.getElementById('sidebarContent'),
+            mainContainer: document.querySelector('.main-container'),
+            mobileNavToggle: document.getElementById('mobileNavToggle'),
             searchInput: document.getElementById('searchInput'),
+            guidelineHeader: document.getElementById('guidelineHeader'),
             entityTitle: document.getElementById('entityTitle'),
             entitySubtitle: document.getElementById('entitySubtitle'),
             societyTabs: document.getElementById('societyTabs'),
+            filterBar: document.getElementById('filterBar'),
+            modalityFilter: document.getElementById('modalityFilter'),
+            strengthFilter: document.getElementById('strengthFilter'),
+            cardSearchInput: document.getElementById('cardSearchInput'),
+            sortSelect: document.getElementById('sortSelect'),
             guidelineContainer: document.getElementById('guidelineContainer'),
-            mainContainer: document.querySelector('.main-container'),
             welcomeScreen: document.getElementById('welcomeScreen'),
             timelineContainer: document.getElementById('timelineContainer'),
             loadingOverlay: document.getElementById('loadingOverlay'),
@@ -95,904 +92,868 @@ class PatientenpfadeApp {
             pathCount: document.getElementById('pathCount'),
             pathModalOverlay: document.getElementById('pathModalOverlay'),
             pathModal: document.getElementById('pathModal'),
-            pathModalClose: document.getElementById('pathModalClose'),
             pathModalContent: document.getElementById('pathModalContent'),
             pathPrintHeader: document.getElementById('pathPrintHeader'),
             emptyPathMessage: document.getElementById('emptyPathMessage'),
-            printPathBtn: document.getElementById('printPathBtn'),
-            exportPathBtn: document.getElementById('exportPathBtn'),
-            clearPathBtn: document.getElementById('clearPathBtn'),
-            mobileNavToggle: document.getElementById('mobileNavToggle'),
-            filterBar: document.getElementById('filterBar'),
-            modalityFilter: document.getElementById('modalityFilter'),
-            strengthFilter: document.getElementById('strengthFilter'),
-            cardSearchInput: document.getElementById('cardSearchInput'),
-            sortSelect: document.getElementById('sortSelect')
+            btnClosePathModal: document.getElementById('pathModalClose'),
+            btnExportPath: document.getElementById('exportPathBtn'),
+            btnPrintPath: document.getElementById('printPathBtn'),
+            btnClearPath: document.getElementById('clearPathBtn')
         };
+
+        this.init();
+    }
+
+    async init() {
+        this.applyTheme();
+        this.attachEventListeners();
+        await this.loadData();
+    }
+
+    initializeIcons() {
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
     }
 
     attachEventListeners() {
-        this.elements.themeToggle.addEventListener('click', () => this.toggleTheme());
-        this.elements.searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
-        document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
-        this.elements.patientPathFab.addEventListener('click', () => this.openPathModal());
-        this.elements.pathModalOverlay.addEventListener('click', (e) => {
-            if (e.target === this.elements.pathModalOverlay) {
-                this.closePathModal();
-            }
-        });
-        this.elements.pathModalClose.addEventListener('click', () => this.closePathModal());
-        this.elements.printPathBtn.addEventListener('click', () => this.printPath());
-        this.elements.exportPathBtn.addEventListener('click', () => this.exportPathAsTxt());
-        this.elements.clearPathBtn.addEventListener('click', () => this.clearPath());
-        this.elements.mobileNavToggle.addEventListener('click', () => this.toggleMobileNav());
-        this.elements.mainContainer.addEventListener('click', (e) => {
-            if (this.elements.sidebar.classList.contains('open') && e.target === this.elements.mainContainer) {
-                this.toggleMobileNav(false);
+        // Theme Toggle
+        this.dom.themeToggle.addEventListener('click', () => this.toggleTheme());
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+                e.preventDefault();
+                this.toggleTheme();
             }
         });
 
-        this.elements.timelineContainer.addEventListener('click', (e) => {
-            const card = e.target.closest('.recommendation-card');
-            const icon = e.target.closest('.info-icon');
-            const justificationToggle = e.target.closest('.justification-toggle');
-            const sourceTextToggle = e.target.closest('.source-text-toggle');
-            const addToPathBtn = e.target.closest('.add-to-path-btn');
-
-            if (icon) {
-                e.stopPropagation();
-                this.toggleTooltip(icon);
-            } else if (justificationToggle || sourceTextToggle || addToPathBtn) {
-                return;
-            } else if (card) {
-                card.classList.toggle('expanded');
+        // Navigation & Search
+        this.dom.mobileNavToggle.addEventListener('click', () => this.toggleSidebar());
+        this.dom.searchInput.addEventListener('input', (e) => this.handleSidebarSearch(e.target.value));
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                this.dom.searchInput.focus();
             }
         });
 
-        this.elements.timelineContainer.addEventListener('mouseout', (e) => {
-            const icon = e.target.closest('.info-icon');
-            if (icon && this.activeTooltip && this.activeTooltip.owner === icon) {
-                this.hideTooltip();
+        // Sidebar outside click (mobile)
+        this.dom.mainContainer.addEventListener('click', () => {
+            if (this.dom.sidebar.classList.contains('open') && window.innerWidth <= 768) {
+                this.toggleSidebar(false);
             }
         });
 
-        document.addEventListener('click', (e) => {
-            if (this.activeTooltip && !e.target.closest('.info-icon')) {
-                this.hideTooltip();
-            }
+        // Filters & Sorting
+        this.dom.cardSearchInput.addEventListener('input', (e) => {
+            this.state.filters.textSearch = e.target.value.toLowerCase();
+            this.renderGuidelineView();
         });
 
-        this.elements.cardSearchInput.addEventListener('input', (e) => {
-            filters.cardSearch = e.target.value;
-            this.renderTimelineView(currentGuideline);
+        this.dom.sortSelect.addEventListener('change', (e) => {
+            this.state.sortMethod = e.target.value;
+            this.renderGuidelineView();
         });
 
-        this.elements.sortSelect.addEventListener('change', (e) => {
-            currentSort = e.target.value;
-            this.renderTimelineView(currentGuideline);
+        // Patient Path Actions
+        this.dom.patientPathFab.addEventListener('click', () => this.openPathModal());
+        this.dom.pathModalOverlay.addEventListener('click', (e) => {
+            if (e.target === this.dom.pathModalOverlay) this.closePathModal();
         });
-    }
+        this.dom.btnClosePathModal.addEventListener('click', () => this.closePathModal());
+        this.dom.btnClearPath.addEventListener('click', () => this.clearPath());
+        this.dom.btnExportPath.addEventListener('click', () => this.exportPath());
+        this.dom.btnPrintPath.addEventListener('click', () => window.print());
 
-    initializeLucideIcons() {
-        lucide.createIcons();
-    }
-
-    toggleTheme() {
-        const body = document.body;
-        body.classList.toggle('light-mode');
-        body.classList.toggle('dark-mode');
-    }
-
-    toggleMobileNav(forceState) {
-        const isOpen = this.elements.sidebar.classList.contains('open');
-        const shouldOpen = forceState !== undefined ? forceState : !isOpen;
+        // Global Event Delegation for Tooltips and Card Interactions
+        document.addEventListener('click', (e) => this.handleGlobalClicks(e));
         
-        if (shouldOpen) {
-            this.elements.sidebar.classList.add('open');
-            this.elements.mainContainer.classList.add('sidebar-open');
-        } else {
-            this.elements.sidebar.classList.remove('open');
-            this.elements.mainContainer.classList.remove('sidebar-open');
-        }
+        // Close tooltip on mouseout if not hovering tooltip itself
+        document.addEventListener('mouseout', (e) => {
+            const infoIcon = e.target.closest('.info-icon');
+            if (infoIcon && this.activeTooltip) {
+                // Small delay to allow moving mouse to tooltip if needed (though currently CSS pointer-events:none on tooltip)
+                this.removeTooltip();
+            }
+        });
     }
 
     async loadData() {
-        this.showLoading(true);
+        this.toggleLoading(true);
         try {
             const response = await fetch('data/OncoGuidelines.json');
-            oncoData = await response.json();
-            this.renderNavigation();
-            this.showLoading(false);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            this.data = await response.json();
+            this.renderSidebar();
+            this.initializeIcons();
         } catch (error) {
-            console.error('Error loading data:', error);
-            this.showError('Fehler beim Laden der Daten');
-            this.showLoading(false);
+            console.error('Data load failed:', error);
+            this.dom.guidelineContainer.innerHTML = `
+                <div class="error-message" style="text-align: center; padding: 40px;">
+                    <i data-lucide="alert-triangle" style="width: 48px; height: 48px; color: var(--status-danger-text); margin-bottom: 16px;"></i>
+                    <h3>Daten konnten nicht geladen werden</h3>
+                    <p>Bitte überprüfen Sie Ihre Internetverbindung oder versuchen Sie es später erneut.</p>
+                    <p style="font-family: monospace; margin-top: 10px; color: var(--text-tertiary);">${error.message}</p>
+                </div>
+            `;
+            this.initializeIcons();
+        } finally {
+            this.toggleLoading(false);
         }
     }
 
-    showLoading(show) {
-        if (show) {
-            this.elements.loadingOverlay.classList.add('active');
+    /* --- UI Logic --- */
+
+    toggleTheme() {
+        this.state.darkMode = !this.state.darkMode;
+        localStorage.setItem('theme', this.state.darkMode ? 'dark' : 'light');
+        this.applyTheme();
+    }
+
+    applyTheme() {
+        if (this.state.darkMode) {
+            this.dom.body.classList.add('dark-mode');
+            this.dom.body.classList.remove('light-mode');
         } else {
-            this.elements.loadingOverlay.classList.remove('active');
+            this.dom.body.classList.add('light-mode');
+            this.dom.body.classList.remove('dark-mode');
         }
     }
 
-    showError(message) {
-        this.elements.guidelineContainer.innerHTML = `
-            <div class="error-message">
-                <i data-lucide="alert-circle" class="error-icon"></i>
-                <h3>Fehler</h3>
-                <p>${message}</p>
-            </div>
-        `;
-        lucide.createIcons();
+    toggleSidebar(forceState) {
+        const isOpen = this.dom.sidebar.classList.contains('open');
+        const newState = forceState !== undefined ? forceState : !isOpen;
+        
+        if (newState) {
+            this.dom.sidebar.classList.add('open');
+            this.dom.mainContainer.classList.add('sidebar-open');
+        } else {
+            this.dom.sidebar.classList.remove('open');
+            this.dom.mainContainer.classList.remove('sidebar-open');
+        }
     }
 
-    renderNavigation() {
-        const filteredEntities = this.filterEntities(oncoData.tumorEntities);
-        this.elements.sidebarContent.innerHTML = '';
-        
-        filteredEntities.forEach((entity, index) => {
-            const entityElement = this.createEntityElement(entity, index);
-            this.elements.sidebarContent.appendChild(entityElement);
+    toggleLoading(show) {
+        if (show) this.dom.loadingOverlay.classList.add('active');
+        else this.dom.loadingOverlay.classList.remove('active');
+    }
+
+    /* --- Navigation & Sidebar --- */
+
+    renderSidebar() {
+        const entities = this.filterEntities(this.data.tumorEntities);
+        this.dom.sidebarContent.innerHTML = '';
+
+        if (entities.length === 0) {
+            this.dom.sidebarContent.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-tertiary);">Keine Entitäten gefunden</div>';
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        entities.forEach((entity, index) => {
+            const item = document.createElement('div');
+            item.className = 'entity-item';
+            
+            const hasSubtypes = entity.subtypes && entity.subtypes.length > 1;
+            
+            // Header
+            const header = document.createElement('div');
+            header.className = 'entity-header';
+            header.dataset.index = index;
+            header.innerHTML = `
+                <span class="entity-name">${entity.entityName}</span>
+                ${hasSubtypes ? '<i data-lucide="chevron-down" class="entity-icon"></i>' : ''}
+            `;
+            header.addEventListener('click', () => this.handleEntitySelect(entity, item, hasSubtypes));
+            
+            item.appendChild(header);
+
+            // Subtypes
+            if (hasSubtypes) {
+                const subContainer = document.createElement('div');
+                subContainer.className = 'subtypes-container';
+                
+                entity.subtypes.forEach(subtype => {
+                    const subItem = document.createElement('div');
+                    subItem.className = 'subtype-item';
+                    subItem.textContent = subtype.subtypeName;
+                    subItem.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.handleSubtypeSelect(entity, subtype, subItem);
+                    });
+                    subContainer.appendChild(subItem);
+                });
+                item.appendChild(subContainer);
+            }
+
+            fragment.appendChild(item);
         });
-        
-        lucide.createIcons();
+
+        this.dom.sidebarContent.appendChild(fragment);
+        this.initializeIcons();
     }
 
     filterEntities(entities) {
-        if (!searchTerm) return entities;
-        
-        return entities.filter(entity => {
-            const entityMatch = entity.entityName.toLowerCase().includes(searchTerm.toLowerCase());
-            const subtypeMatch = entity.subtypes.some(subtype => 
-                subtype.subtypeName.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-            return entityMatch || subtypeMatch;
-        });
+        if (!this.state.searchTerm) return entities;
+        const term = this.state.searchTerm.toLowerCase();
+        return entities.filter(e => 
+            e.entityName.toLowerCase().includes(term) || 
+            (e.subtypes && e.subtypes.some(s => s.subtypeName.toLowerCase().includes(term)))
+        );
     }
 
-    createEntityElement(entity, index) {
-        const entityDiv = document.createElement('div');
-        entityDiv.className = 'entity-item';
-        entityDiv.dataset.entityIndex = index;
-        
-        const hasMultipleSubtypes = entity.subtypes.length > 1;
-        
-        entityDiv.innerHTML = `
-            <div class="entity-header" data-entity="${entity.entityName}">
-                <span class="entity-name">${entity.entityName}</span>
-                ${hasMultipleSubtypes ? '<i data-lucide="chevron-down" class="entity-icon"></i>' : ''}
-            </div>
-            ${hasMultipleSubtypes ? '<div class="subtypes-container"></div>' : ''}
-        `;
-        
-        const header = entityDiv.querySelector('.entity-header');
-        header.addEventListener('click', () => this.handleEntityClick(entity, entityDiv));
-        
-        if (hasMultipleSubtypes) {
-            const subtypesContainer = entityDiv.querySelector('.subtypes-container');
-            entity.subtypes.forEach(subtype => {
-                if (subtype.guidelines.length > 0) {
-                    const subtypeDiv = document.createElement('div');
-                    subtypeDiv.className = 'subtype-item';
-                    subtypeDiv.textContent = subtype.subtypeName;
-                    subtypeDiv.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        this.handleSubtypeClick(entity, subtype, subtypeDiv);
-                    });
-                    subtypesContainer.appendChild(subtypeDiv);
-                }
-            });
-        }
-        
-        return entityDiv;
+    handleSidebarSearch(term) {
+        this.state.searchTerm = term;
+        this.renderSidebar();
     }
 
-    handleEntityClick(entity, entityDiv) {
-        const hasMultipleSubtypes = entity.subtypes.length > 1;
-        
-        if (hasMultipleSubtypes) {
-            const subtypesContainer = entityDiv.querySelector('.subtypes-container');
-            const isExpanded = entityDiv.classList.toggle('expanded');
-
-            document.querySelectorAll('.entity-item.expanded').forEach(item => {
-                if (item !== entityDiv) {
-                    item.classList.remove('expanded');
-                    const container = item.querySelector('.subtypes-container');
-                    if(container) {
-                        container.style.maxHeight = null;
-                    }
+    handleEntitySelect(entity, itemElement, hasSubtypes) {
+        if (hasSubtypes) {
+            // Accordion Logic
+            const isExpanded = itemElement.classList.contains('expanded');
+            
+            // Close other expanded items
+            document.querySelectorAll('.entity-item.expanded').forEach(el => {
+                if (el !== itemElement) {
+                    el.classList.remove('expanded');
+                    const container = el.querySelector('.subtypes-container');
+                    if (container) container.style.maxHeight = null;
                 }
             });
 
+            // Toggle current item
             if (isExpanded) {
-                subtypesContainer.style.maxHeight = subtypesContainer.scrollHeight + "px";
+                itemElement.classList.remove('expanded');
+                itemElement.querySelector('.subtypes-container').style.maxHeight = null;
             } else {
-                subtypesContainer.style.maxHeight = null;
+                itemElement.classList.add('expanded');
+                const container = itemElement.querySelector('.subtypes-container');
+                container.style.maxHeight = container.scrollHeight + "px";
             }
-
         } else {
-            document.querySelectorAll('.subtype-item.active').forEach(item => item.classList.remove('active'));
-            document.querySelectorAll('.entity-item.has-active-child').forEach(item => item.classList.remove('has-active-child'));
-            document.querySelectorAll('.entity-header.active').forEach(header => header.classList.remove('active'));
-            
-            entityDiv.querySelector('.entity-header').classList.add('active');
-            
-            if (entity.subtypes.length > 0 && entity.subtypes[0].guidelines.length > 0) {
-                this.loadEntityGuidelines(entity, entity.subtypes[0]);
-            }
-            this.toggleMobileNav(false);
+            // Direct Selection (Entity has only one subtype which is usually itself)
+            this.highlightSelection(itemElement.querySelector('.entity-header'));
+            // Fallback if subtypes array exists but length is 1, or structure implies direct mapping
+            const subtype = entity.subtypes && entity.subtypes.length > 0 ? entity.subtypes[0] : { subtypeName: entity.entityName, guidelines: [] }; 
+            this.loadEntityContent(entity, subtype);
         }
     }
 
-    handleSubtypeClick(entity, subtype, subtypeDiv) {
-        document.querySelectorAll('.subtype-item.active').forEach(item => item.classList.remove('active'));
-        document.querySelectorAll('.entity-item.has-active-child').forEach(item => item.classList.remove('has-active-child'));
-        document.querySelectorAll('.entity-header.active').forEach(header => header.classList.remove('active'));
-        
-        subtypeDiv.classList.add('active');
-        subtypeDiv.closest('.entity-item').classList.add('has-active-child');
-        
-        this.loadEntityGuidelines(entity, subtype);
-        this.toggleMobileNav(false);
+    handleSubtypeSelect(entity, subtype, element) {
+        this.highlightSelection(element);
+        this.loadEntityContent(entity, subtype);
     }
 
-    loadEntityGuidelines(entity, subtype) {
-        currentEntity = entity;
-        currentSubtype = subtype;
+    highlightSelection(element) {
+        // Remove active class from all headers and subtype items
+        document.querySelectorAll('.entity-header.active, .subtype-item.active').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
         
-        this.elements.entityTitle.textContent = entity.entityName;
-        this.elements.entitySubtitle.textContent = subtype.subtypeName !== entity.entityName ? subtype.subtypeName : '';
+        // Mobile: close sidebar on selection
+        if (window.innerWidth <= 768) this.toggleSidebar(false);
+    }
+
+    /* --- Content Rendering --- */
+
+    loadEntityContent(entity, subtype) {
+        this.state.currentEntity = entity;
+        this.state.currentSubtype = subtype;
         
+        // Update Header
+        this.dom.entityTitle.textContent = entity.entityName;
+        this.dom.entitySubtitle.textContent = subtype.subtypeName !== entity.entityName ? subtype.subtypeName : '';
+        
+        // Reset View State
+        this.resetFilters();
+        this.dom.welcomeScreen.classList.add('hidden');
+        this.dom.timelineContainer.classList.add('active');
+        this.dom.filterBar.classList.add('visible');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Render Tabs
         this.renderSocietyTabs(subtype.guidelines);
-        
-        if (subtype.guidelines.length > 0) {
-            this.loadGuideline(subtype.guidelines[0]);
+
+        // Load First Guideline by default if available
+        if (subtype.guidelines && subtype.guidelines.length > 0) {
+            this.selectGuideline(subtype.guidelines[0]);
         } else {
-            this.showNoGuidelines();
+            this.dom.timelineContainer.innerHTML = `
+                <div class="no-data" style="text-align:center; padding: 40px; color: var(--text-secondary);">
+                    <i data-lucide="file-x" style="width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                    <p>Keine Leitlinien für diese Entität verfügbar.</p>
+                </div>`;
+            this.initializeIcons();
         }
-        
-        this.elements.mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
-        this.elements.welcomeScreen.classList.add('hidden');
-        this.elements.timelineContainer.classList.add('active');
-        this.elements.filterBar.classList.add('visible');
     }
 
     renderSocietyTabs(guidelines) {
-        this.elements.societyTabs.innerHTML = '';
-        
-        guidelines.forEach((guideline, index) => {
-            const tab = document.createElement('div');
-            tab.className = `society-tab ${guideline.issuingSociety.toLowerCase().replace('-', '-')}`;
-            if (index === 0) tab.classList.add('active');
-            
+        this.dom.societyTabs.innerHTML = '';
+        guidelines.forEach(guideline => {
+            const tab = document.createElement('button');
+            const societyClass = guideline.issuingSociety.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            tab.className = `society-tab ${societyClass}`;
             tab.innerHTML = `
-                <span>${guideline.issuingSociety}</span>
+                ${guideline.issuingSociety}
                 <span class="tab-version">${guideline.version}</span>
             `;
-            
-            tab.addEventListener('click', () => this.loadGuideline(guideline));
-            this.elements.societyTabs.appendChild(tab);
+            tab.addEventListener('click', () => this.selectGuideline(guideline));
+            this.dom.societyTabs.appendChild(tab);
         });
     }
 
-    loadGuideline(guideline) {
-        currentGuideline = guideline;
+    selectGuideline(guideline) {
+        this.state.currentGuideline = guideline;
         
-        document.querySelectorAll('.society-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        
-        const activeTab = Array.from(this.elements.societyTabs.children).find(tab => 
-            tab.textContent.includes(guideline.issuingSociety)
-        );
-        if (activeTab) activeTab.classList.add('active');
-        
-        this.resetFilters();
-        this.renderFilterOptions(guideline);
-        this.renderTimelineView(guideline);
-    }
-
-    renderTimelineView(guideline) {
-        this.elements.timelineContainer.innerHTML = '';
-        
-        const groupedRecommendations = this.groupRecommendationsByClinicalSituation(guideline.recommendationGroups);
-        const filteredAndSorted = this.getFilteredAndSortedRecommendations(groupedRecommendations);
-        
-        Object.entries(filteredAndSorted).forEach(([situation, recommendations]) => {
-            if (recommendations.length > 0) {
-                const phaseElement = this.createPhaseElement(situation, recommendations);
-                this.elements.timelineContainer.appendChild(phaseElement);
+        // Update Active Tab
+        Array.from(this.dom.societyTabs.children).forEach(tab => {
+            // Basic check: contains society string
+            const societyName = tab.textContent.split('\n')[0].trim(); // Very rough, better to match index or data attribute
+            // Better approach: iterate guidelines again or store ref. 
+            // Simple visual update based on text content match for now:
+            if (tab.innerHTML.includes(guideline.version) && tab.innerHTML.includes(guideline.issuingSociety)) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
             }
         });
-        lucide.createIcons();
+
+        this.buildFilterOptions(guideline);
+        this.renderGuidelineView();
     }
 
-    groupRecommendationsByClinicalSituation(recommendationGroups) {
-        const grouped = {};
-        
-        Object.entries(recommendationGroups).forEach(([groupName, recommendations]) => {
-            recommendations.forEach(rec => {
-                const situation = rec.clinicalSituation;
-                if (!grouped[situation]) {
-                    grouped[situation] = [];
-                }
-                grouped[situation].push(rec);
+    buildFilterOptions(guideline) {
+        // Extract unique modalities
+        const modalities = new Set();
+        if (guideline.recommendationGroups) {
+            Object.values(guideline.recommendationGroups).flat().forEach(rec => {
+                if (rec.modality) modalities.add(rec.modality);
             });
+        }
+
+        // Render Modality Filters
+        this.dom.modalityFilter.innerHTML = '';
+        Array.from(modalities).sort().forEach(mod => {
+            const btn = document.createElement('button');
+            btn.className = 'filter-btn';
+            btn.textContent = mod;
+            btn.addEventListener('click', () => {
+                if (this.state.filters.modality.has(mod)) this.state.filters.modality.delete(mod);
+                else this.state.filters.modality.add(mod);
+                btn.classList.toggle('active');
+                this.renderGuidelineView();
+            });
+            this.dom.modalityFilter.appendChild(btn);
         });
-        
-        return grouped;
+
+        // Render Strength Filters
+        this.dom.strengthFilter.innerHTML = '';
+        const strengths = [
+            { label: 'Empfohlen', keys: ['empfohlen', 'soll', 'obligat'] },
+            { label: 'Kann', keys: ['kann', 'optional', 'fakultativ'] },
+            { label: 'Nicht empfohlen', keys: ['nicht', 'sollte nicht'] }
+        ];
+
+        strengths.forEach(group => {
+            const btn = document.createElement('button');
+            btn.className = 'filter-btn';
+            btn.textContent = group.label;
+            btn.addEventListener('click', () => {
+                if (this.state.filters.strength.has(group.label)) this.state.filters.strength.delete(group.label);
+                else this.state.filters.strength.add(group.label);
+                btn.classList.toggle('active');
+                this.renderGuidelineView();
+            });
+            this.dom.strengthFilter.appendChild(btn);
+        });
     }
 
-    createPhaseElement(situation, recommendations) {
-        const phaseDiv = document.createElement('div');
-        phaseDiv.className = 'clinical-phase';
+    resetFilters() {
+        this.state.filters.modality.clear();
+        this.state.filters.strength.clear();
+        this.state.filters.textSearch = '';
+        this.state.sortMethod = 'default';
         
-        phaseDiv.innerHTML = `
-            <div class="phase-header">
-                <div class="phase-header-content">
-                    <h3 class="phase-title">${situation}</h3>
-                    <button class="expand-toggle-btn">
-                        <i data-lucide="arrow-down-up"></i>
-                        <span>Alle umschalten</span>
-                    </button>
-                </div>
-                <div class="phase-line"></div>
+        this.dom.cardSearchInput.value = '';
+        this.dom.sortSelect.value = 'default';
+        // Clear active classes from filter buttons
+        document.querySelectorAll('.filter-btn.active').forEach(b => b.classList.remove('active'));
+    }
+
+    renderGuidelineView() {
+        const container = this.dom.timelineContainer;
+        container.innerHTML = '';
+        const guideline = this.state.currentGuideline;
+        if (!guideline || !guideline.recommendationGroups) return;
+
+        const phases = Object.keys(guideline.recommendationGroups);
+
+        phases.forEach(phase => {
+            const recommendations = guideline.recommendationGroups[phase];
+            const filteredRecs = this.filterAndSortRecommendations(recommendations);
+
+            if (filteredRecs.length > 0) {
+                const phaseEl = this.createPhaseSection(phase, filteredRecs);
+                container.appendChild(phaseEl);
+            }
+        });
+
+        if (container.innerHTML === '') {
+            container.innerHTML = `
+                <div class="no-results" style="text-align:center; padding: 40px; color: var(--text-secondary);">
+                    Keine Empfehlungen entsprechen den aktuellen Filterkriterien.
+                </div>`;
+        }
+
+        this.initializeIcons();
+        this.updatePathButtonsState();
+    }
+
+    filterAndSortRecommendations(recs) {
+        let result = recs.filter(rec => {
+            // Text Search
+            if (this.state.filters.textSearch) {
+                const term = this.state.filters.textSearch;
+                const text = `${rec.procedure} ${rec.justification || ''} ${rec.sourceText || ''}`.toLowerCase();
+                if (!text.includes(term)) return false;
+            }
+
+            // Modality Filter
+            if (this.state.filters.modality.size > 0) {
+                if (!this.state.filters.modality.has(rec.modality)) return false;
+            }
+
+            // Strength Filter
+            if (this.state.filters.strength.size > 0) {
+                const s = rec.recommendationStrength.toLowerCase();
+                const isSuccess = this.state.filters.strength.has('Empfohlen') && (s.includes('empfohlen') || s.includes('soll') || s.includes('obligat')) && !s.includes('nicht');
+                const isWarning = this.state.filters.strength.has('Kann') && (s.includes('kann') || s.includes('optional') || s.includes('fakultativ'));
+                const isDanger = this.state.filters.strength.has('Nicht empfohlen') && (s.includes('nicht') || s.includes('sollte nicht'));
+                
+                if (!isSuccess && !isWarning && !isDanger) return false;
+            }
+
+            return true;
+        });
+
+        // Sorting
+        if (this.state.sortMethod === 'alphabetical') {
+            result.sort((a, b) => a.procedure.localeCompare(b.procedure));
+        } else if (this.state.sortMethod === 'strength') {
+            const weight = (r) => {
+                const s = r.recommendationStrength.toLowerCase();
+                if (s.includes('nicht') || s.includes('sollte nicht')) return 3;
+                if (s.includes('kann') || s.includes('optional') || s.includes('fakultativ')) return 2;
+                return 1; // Empfohlen/Soll/Obligat is priority 1
+            };
+            result.sort((a, b) => weight(a) - weight(b));
+        }
+
+        return result;
+    }
+
+    createPhaseSection(title, recommendations) {
+        const section = document.createElement('div');
+        section.className = 'clinical-phase';
+
+        // Header
+        const header = document.createElement('div');
+        header.className = 'phase-header';
+        header.innerHTML = `
+            <div class="phase-line"></div>
+            <div class="phase-header-content">
+                <h3 class="phase-title">${title}</h3>
+                <button class="expand-toggle-btn">
+                    <i data-lucide="chevrons-up-down"></i>
+                    Alle umschalten
+                </button>
             </div>
-            <div class="recommendations-grid"></div>
         `;
-        
-        const grid = phaseDiv.querySelector('.recommendations-grid');
+
+        // Grid
+        const grid = document.createElement('div');
+        grid.className = 'recommendations-grid';
+
         recommendations.forEach(rec => {
-            grid.appendChild(this.createRecommendationCard(rec));
+            grid.appendChild(this.createCard(rec));
         });
-        
-        const toggleBtn = phaseDiv.querySelector('.expand-toggle-btn');
-        toggleBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
+
+        // Phase Toggle Event
+        header.querySelector('.expand-toggle-btn').addEventListener('click', () => {
             const cards = grid.querySelectorAll('.recommendation-card');
-            const isAnyExpanded = Array.from(cards).some(card => card.classList.contains('expanded'));
-            cards.forEach(card => {
-                if (isAnyExpanded) {
-                    card.classList.remove('expanded');
-                } else {
-                    card.classList.add('expanded');
-                }
+            // If any card is collapsed, expand all. If all are expanded, collapse all.
+            const anyCollapsed = Array.from(cards).some(c => !c.classList.contains('expanded'));
+            
+            cards.forEach(c => {
+                if (anyCollapsed) c.classList.add('expanded');
+                else c.classList.remove('expanded');
             });
         });
 
-        return phaseDiv;
+        section.appendChild(header);
+        section.appendChild(grid);
+        return section;
     }
 
-    createRecommendationCard(recommendation) {
-        const strengthClass = this.getStrengthClass(recommendation.recommendationStrength);
+    createCard(rec) {
         const card = document.createElement('div');
+        const strengthClass = this.getStrengthClass(rec.recommendationStrength);
         card.className = `recommendation-card ${strengthClass}`;
-        
-        const strengthIcon = this.getStrengthIcon(recommendation.recommendationStrength);
-        const isInPath = patientPath.some(item => item.recommendation.recommendationId === recommendation.recommendationId);
-        
+        card.dataset.id = rec.recommendationId;
+
+        // Helper to safely get values
+        const getVal = (v) => v ? v : '';
+
         card.innerHTML = `
             <div class="recommendation-header">
                 <div class="procedure-info">
-                    <h4 class="procedure-name">${recommendation.procedure}</h4>
+                    <div class="procedure-name">${rec.procedure}</div>
                     <div class="recommendation-meta">
-                        <span class="strength-text ${strengthClass}">${recommendation.recommendationStrength}</span>
-                        ${recommendation.recommendationGrade ? `
-                            <span class="evidence-badge" data-value="${recommendation.recommendationGrade}">
-                                Grad: ${recommendation.recommendationGrade}
-                                <i data-lucide="info" class="info-icon"></i>
-                            </span>` : ''}
-                        ${recommendation.evidenceLevel ? `
-                            <span class="evidence-badge" data-value="${recommendation.evidenceLevel}">
-                                Evidenz: ${recommendation.evidenceLevel}
-                                <i data-lucide="info" class="info-icon"></i>
-                            </span>` : ''}
+                        <span class="strength-text ${strengthClass}">${rec.recommendationStrength}</span>
+                        <span class="modality-badge">${getVal(rec.modality)}</span>
+                        ${rec.evidenceLevel ? `
+                        <div class="evidence-badge" data-tooltip-type="evidence" data-value="${rec.evidenceLevel}">
+                            Evidenz: ${rec.evidenceLevel} <i data-lucide="info" class="info-icon"></i>
+                        </div>` : ''}
+                        ${rec.recommendationGrade ? `
+                        <div class="evidence-badge" data-tooltip-type="grade" data-value="${rec.recommendationGrade}">
+                            Grad: ${rec.recommendationGrade} <i data-lucide="info" class="info-icon"></i>
+                        </div>` : ''}
                     </div>
-                    <span class="modality-badge">${recommendation.modality}</span>
                 </div>
                 <div class="recommendation-header-actions">
                     <div class="strength-indicator ${strengthClass}">
-                        ${strengthIcon}
+                        ${this.getStrengthSymbol(strengthClass)}
                     </div>
-                    <button class="add-to-path-btn ${isInPath ? 'added' : ''}" data-id="${recommendation.recommendationId}">
-                        <i data-lucide="${isInPath ? 'check' : 'plus'}"></i>
+                    <button class="add-to-path-btn" title="Zum Patientenpfad hinzufügen">
+                        <i data-lucide="plus"></i>
                     </button>
                 </div>
             </div>
             <div class="recommendation-body">
                 <div class="recommendation-body-content">
                     <div class="recommendation-details">
-                        <div class="detail-item">
-                            <span class="detail-label">Region:</span>
-                            <span class="detail-value">${recommendation.anatomicRegion}</span>
-                        </div>
-                        ${recommendation.details ? `
-                            <div class="detail-item">
-                                <span class="detail-label">Details:</span>
-                                <span class="detail-value">${recommendation.details}</span>
-                            </div>
-                        ` : ''}
-                        <div class="detail-item">
-                            <span class="detail-label">Stadium:</span>
-                            <span class="detail-value">${recommendation.clinicalStage}</span>
-                        </div>
-                        ${recommendation.patientGroup ? `
-                            <div class="detail-item">
-                                <span class="detail-label">Patientengruppe:</span>
-                                <span class="detail-value">${recommendation.patientGroup}</span>
-                            </div>
-                        ` : ''}
-                        <div class="detail-item">
-                            <span class="detail-label">Häufigkeit:</span>
-                            <span class="detail-value">${recommendation.frequency}</span>
-                        </div>
+                        ${this.createDetailRow('Region', rec.anatomicRegion)}
+                        ${this.createDetailRow('Details', rec.details)}
+                        ${this.createDetailRow('Frequenz', rec.frequency)}
+                        ${this.createDetailRow('Zielgruppe', rec.patientGroup)}
+                        ${this.createDetailRow('Stadium', rec.clinicalStage)}
                     </div>
+                    
+                    ${rec.justification ? `
                     <div class="justification-container">
                         <button class="justification-toggle">
-                            Begründung anzeigen
-                            <i data-lucide="chevron-down"></i>
+                            Begründung anzeigen <i data-lucide="chevron-down"></i>
                         </button>
-                        <div class="justification-content">
-                            <p>${recommendation.justification}</p>
-                        </div>
-                    </div>
-                    ${recommendation.sourceText ? `
+                        <div class="justification-content"><p>${rec.justification}</p></div>
+                    </div>` : ''}
+
+                    ${rec.sourceText ? `
                     <div class="source-text-container">
                         <button class="source-text-toggle">
-                            Originaltext anzeigen
-                            <i data-lucide="chevron-down"></i>
+                            Originaltext <i data-lucide="chevron-down"></i>
                         </button>
-                        <div class="source-text-content">
-                            <p>${recommendation.sourceText}</p>
-                        </div>
-                    </div>
-                    ` : ''}
+                        <div class="source-text-content"><p>${rec.sourceText}</p></div>
+                    </div>` : ''}
                 </div>
             </div>
         `;
 
-        const justificationToggle = card.querySelector('.justification-toggle');
-        const justificationContent = card.querySelector('.justification-content');
-        const justificationContainer = card.querySelector('.justification-container');
-
-        justificationToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isExpanded = justificationContainer.classList.toggle('expanded');
-            if (isExpanded) {
-                justificationContent.style.maxHeight = justificationContent.scrollHeight + 'px';
-                justificationToggle.childNodes[0].nodeValue = "Begründung ausblenden ";
-            } else {
-                justificationContent.style.maxHeight = null;
-                justificationToggle.childNodes[0].nodeValue = "Begründung anzeigen ";
-            }
+        // Toggle Logic
+        card.querySelector('.recommendation-header').addEventListener('click', (e) => {
+            if (e.target.closest('button') || e.target.closest('.info-icon')) return;
+            card.classList.toggle('expanded');
         });
 
-        const sourceTextToggle = card.querySelector('.source-text-toggle');
-        if (sourceTextToggle) {
-            const sourceTextContent = card.querySelector('.source-text-content');
-            const sourceTextContainer = card.querySelector('.source-text-container');
-            sourceTextToggle.addEventListener('click', (e) => {
+        // Add to Path Logic
+        const addBtn = card.querySelector('.add-to-path-btn');
+        addBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.togglePathItem(rec);
+        });
+
+        // Justification/Source Toggle Logic
+        card.querySelectorAll('.justification-toggle, .source-text-toggle').forEach(btn => {
+            btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const isExpanded = sourceTextContainer.classList.toggle('expanded');
-                if (isExpanded) {
-                    sourceTextContent.style.maxHeight = sourceTextContent.scrollHeight + 'px';
-                    sourceTextToggle.childNodes[0].nodeValue = "Originaltext ausblenden ";
+                const container = btn.parentElement;
+                container.classList.toggle('expanded');
+                const content = container.querySelector('div[class$="-content"]');
+                const icon = btn.querySelector('svg'); // Lucide icon needs re-render or transform
+                
+                if (container.classList.contains('expanded')) {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    if(icon) icon.style.transform = "rotate(180deg)";
                 } else {
-                    sourceTextContent.style.maxHeight = null;
-                    sourceTextToggle.childNodes[0].nodeValue = "Originaltext anzeigen ";
+                    content.style.maxHeight = null;
+                    if(icon) icon.style.transform = "rotate(0deg)";
                 }
             });
-        }
-
-        const addToPathBtn = card.querySelector('.add-to-path-btn');
-        addToPathBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.togglePathItem(recommendation, addToPathBtn);
         });
-        
+
         return card;
     }
 
-    toggleTooltip(iconElement) {
-        if (this.activeTooltip && this.activeTooltip.owner === iconElement) {
-            this.hideTooltip();
-        } else {
-            this.hideTooltip();
-            this.showTooltip(iconElement);
+    createDetailRow(label, value) {
+        if (!value) return '';
+        return `
+            <div class="detail-item">
+                <span class="detail-label">${label}:</span>
+                <span class="detail-value">${value}</span>
+            </div>
+        `;
+    }
+
+    getStrengthClass(text) {
+        const t = text.toLowerCase();
+        if (t.includes('nicht') || t.includes('sollte nicht')) return 'nicht-empfohlen';
+        if (t.includes('kann') || t.includes('optional') || t.includes('fakultativ')) return 'kann-erwogen-werden';
+        return 'empfohlen'; // Default
+    }
+
+    getStrengthSymbol(className) {
+        if (className === 'nicht-empfohlen') return '✕';
+        if (className === 'kann-erwogen-werden') return '○';
+        return '✓';
+    }
+
+    /* --- Interaction Handling --- */
+
+    handleGlobalClicks(e) {
+        // Tooltip Logic
+        const infoIcon = e.target.closest('.info-icon');
+        if (infoIcon) {
+            e.stopPropagation();
+            const badge = infoIcon.closest('.evidence-badge');
+            this.showTooltip(badge, infoIcon);
+            return;
+        }
+
+        // Close Tooltip if clicking elsewhere
+        if (this.activeTooltip && !e.target.closest('.recommendation-tooltip')) {
+            this.removeTooltip();
         }
     }
 
-    showTooltip(iconElement) {
-        const badge = iconElement.closest('.evidence-badge');
-        if (!badge) return;
-    
-        const value = badge.dataset.value;
-        const society = currentGuideline.issuingSociety;
-        const societyData = tooltipData[society] || tooltipData['AWMF-DKG'];
-    
-        let text = 'Keine Detailinformation verfügbar.';
-    
-        if (value && value.includes(',')) {
-            const parts = value.split(',').map(part => part.trim());
-            const texts = parts.map(part => societyData[part] || `Unbekannter Wert: ${part}`);
-            text = texts.join('\n\n');
-        } else if (value) {
-            text = societyData[value] || (tooltipData.DGHO[value] || text);
+    showTooltip(badgeElement, targetIcon) {
+        if (this.activeTooltip) this.removeTooltip();
+
+        const val = badgeElement.dataset.value;
+        const society = this.state.currentGuideline.issuingSociety;
+        
+        let content = 'Keine Beschreibung verfügbar.';
+        
+        // Data lookup
+        if (TOOLTIP_DATA[society] && TOOLTIP_DATA[society][val]) {
+            content = TOOLTIP_DATA[society][val];
+        } else if (TOOLTIP_DATA['AWMF-DKG'][val]) {
+            content = TOOLTIP_DATA['AWMF-DKG'][val];
+        } else {
+            // Split comma separated values e.g. "2+, 3"
+            const parts = val.split(',').map(s => s.trim());
+            const descriptions = parts.map(p => (TOOLTIP_DATA[society]?.[p] || TOOLTIP_DATA['AWMF-DKG']?.[p] || p));
+            if (descriptions.length > 0) content = descriptions.join('<br><br>');
         }
-    
+
         const tooltip = document.createElement('div');
         tooltip.className = 'recommendation-tooltip';
-        tooltip.innerText = text;
+        tooltip.innerHTML = content;
         document.body.appendChild(tooltip);
-    
-        const rect = iconElement.getBoundingClientRect();
-        tooltip.style.left = `${rect.left + window.scrollX}px`;
-        tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+
+        // Calc Position
+        const rect = targetIcon.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
         
-        this.activeTooltip = { element: tooltip, owner: iconElement };
+        let top = rect.bottom + 8 + window.scrollY;
+        let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2) + window.scrollX;
+
+        // Viewport check
+        if (left < 10) left = 10;
+        if (left + tooltipRect.width > window.innerWidth - 10) {
+            left = window.innerWidth - tooltipRect.width - 10;
+        }
+
+        tooltip.style.top = `${top}px`;
+        tooltip.style.left = `${left}px`;
+
+        this.activeTooltip = tooltip;
     }
-    
-    hideTooltip() {
+
+    removeTooltip() {
         if (this.activeTooltip) {
-            this.activeTooltip.element.remove();
+            this.activeTooltip.remove();
             this.activeTooltip = null;
         }
     }
 
-    getStrengthClass(strength) {
-        const strengthLower = strength.toLowerCase();
-        if (strengthLower.includes('empfohlen') && !strengthLower.includes('nicht')) return 'empfohlen';
-        if (strengthLower === 'soll') return 'soll';
-        if (strengthLower === 'sollte') return 'soll';
-        if (strengthLower === 'obligat') return 'obligat';
-        if (strengthLower.includes('kann') || strengthLower === 'optional') return 'kann-erwogen-werden';
-        if (strengthLower === 'fakultativ') return 'fakultativ';
-        if (strengthLower.includes('nicht')) return 'nicht-empfohlen';
-        return 'empfohlen';
-    }
+    /* --- Patient Path Logic --- */
 
-    getStrengthIcon(strength) {
-        const strengthLower = strength.toLowerCase();
-        if (strengthLower.includes('empfohlen') && !strengthLower.includes('nicht')) return '✓';
-        if (strengthLower === 'soll' || strengthLower === 'sollte' || strengthLower === 'obligat') return '✓';
-        if (strengthLower.includes('kann') || strengthLower === 'optional' || strengthLower === 'fakultativ') return '○';
-        if (strengthLower.includes('nicht')) return '✗';
-        return '✓';
-    }
-
-    showNoGuidelines() {
-        this.elements.timelineContainer.innerHTML = `
-            <div class="no-guidelines">
-                <i data-lucide="file-x" class="no-guidelines-icon"></i>
-                <h3>Keine Leitlinien verfügbar</h3>
-                <p>Für diese Entität sind derzeit keine Leitlinien hinterlegt.</p>
-            </div>
-        `;
-        lucide.createIcons();
-    }
-
-    handleSearch(value) {
-        searchTerm = value;
-        clearTimeout(this.searchTimeout);
+    togglePathItem(rec) {
+        const exists = this.state.patientPath.some(p => p.recommendationId === rec.recommendationId);
         
-        this.searchTimeout = setTimeout(() => {
-            this.renderNavigation();
-        }, 300);
-    }
-
-    handleKeyboardShortcuts(e) {
-        if (e.ctrlKey || e.metaKey) {
-            if (e.key === 'k') {
-                e.preventDefault();
-                this.elements.searchInput.focus();
-            }
-            if (e.key === 'd') {
-                e.preventDefault();
-                this.toggleTheme();
-            }
-        }
-    }
-
-    togglePathItem(recommendation, button) {
-        const index = patientPath.findIndex(item => item.recommendation.recommendationId === recommendation.recommendationId);
-        if (index > -1) {
-            patientPath.splice(index, 1);
-            if (button) {
-                button.classList.remove('added');
-                button.innerHTML = '<i data-lucide="plus"></i>';
-            }
+        if (exists) {
+            this.state.patientPath = this.state.patientPath.filter(p => p.recommendationId !== rec.recommendationId);
         } else {
-            const pathItem = {
-                recommendation: recommendation,
+            // Enrich object for export context
+            const item = {
+                ...rec,
                 context: {
-                    entityName: currentEntity.entityName,
-                    subtypeName: currentSubtype.subtypeName,
-                    guidelineTitle: currentGuideline.guidelineTitle,
-                    issuingSociety: currentGuideline.issuingSociety,
-                    version: currentGuideline.version
+                    entity: this.state.currentEntity.entityName,
+                    subtype: this.state.currentSubtype.subtypeName,
+                    society: this.state.currentGuideline.issuingSociety,
+                    guidelineTitle: this.state.currentGuideline.guidelineTitle,
+                    version: this.state.currentGuideline.version
                 }
             };
-            patientPath.push(pathItem);
-            if (button) {
-                button.classList.add('added');
-                button.innerHTML = '<i data-lucide="check"></i>';
-            }
+            this.state.patientPath.push(item);
         }
-        if (button) {
-            lucide.createIcons({
-                nodes: [button]
-            });
-        }
-        this.updatePathFab();
+        
+        this.updatePathButtonsState();
+        this.updateFab();
+        this.renderPathModal();
     }
 
-    updatePathFab() {
-        const count = patientPath.length;
-        this.elements.pathCount.textContent = count;
+    updatePathButtonsState() {
+        const buttons = document.querySelectorAll('.add-to-path-btn');
+        buttons.forEach(btn => {
+            const card = btn.closest('.recommendation-card');
+            if (!card) return;
+            const id = card.dataset.id;
+            const inPath = this.state.patientPath.some(p => p.recommendationId === id);
+            
+            if (inPath) {
+                btn.classList.add('added');
+                btn.innerHTML = '<i data-lucide="check"></i>';
+                btn.title = "Aus Patientenpfad entfernen";
+            } else {
+                btn.classList.remove('added');
+                btn.innerHTML = '<i data-lucide="plus"></i>';
+                btn.title = "Zum Patientenpfad hinzufügen";
+            }
+        });
+        this.initializeIcons();
+    }
+
+    updateFab() {
+        const count = this.state.patientPath.length;
+        this.dom.pathCount.textContent = count;
         if (count > 0) {
-            this.elements.patientPathFab.classList.add('visible');
+            this.dom.patientPathFab.classList.add('visible');
         } else {
-            this.elements.patientPathFab.classList.remove('visible');
+            this.dom.patientPathFab.classList.remove('visible');
         }
     }
 
     openPathModal() {
-        this.renderPathModalContent();
-        this.elements.pathModalOverlay.classList.add('visible');
-        lucide.createIcons();
+        this.renderPathModal();
+        this.dom.pathModalOverlay.classList.add('visible');
+        this.initializeIcons();
     }
 
     closePathModal() {
-        this.elements.pathModalOverlay.classList.remove('visible');
-    }
-
-    renderPathModalContent() {
-        const contentContainer = this.elements.pathModalContent;
-        const emptyMessage = contentContainer.querySelector('.empty-path-message');
-        
-        contentContainer.querySelectorAll('.path-item').forEach(item => item.remove());
-
-        if (patientPath.length === 0) {
-            emptyMessage.style.display = 'flex';
-        } else {
-            emptyMessage.style.display = 'none';
-            patientPath.forEach(item => {
-                const rec = item.recommendation;
-                const itemElement = document.createElement('div');
-                itemElement.className = 'path-item';
-                itemElement.innerHTML = `
-                    <div class="path-item-details">
-                        <div class="path-item-header">
-                            <h3 class="path-item-procedure">${rec.procedure}</h3>
-                            <span class="modality-badge">${rec.modality}</span>
-                        </div>
-                        <p class="path-item-info">
-                            <strong>Situation:</strong> ${rec.clinicalSituation} <br>
-                            <strong>Stadium:</strong> ${rec.clinicalStage} <br>
-                            <strong>Region:</strong> ${rec.anatomicRegion}
-                        </p>
-                    </div>
-                    <button class="path-item-remove-btn" data-id="${rec.recommendationId}">
-                        <i data-lucide="trash-2"></i>
-                    </button>
-                `;
-                itemElement.querySelector('.path-item-remove-btn').addEventListener('click', () => {
-                    this.togglePathItem(rec, null);
-                    this.renderPathModalContent();
-                    this.updateCardsInView();
-                });
-                contentContainer.appendChild(itemElement);
-            });
-            lucide.createIcons({
-                nodes: Array.from(contentContainer.querySelectorAll('.path-item-remove-btn'))
-            });
-        }
-    }
-
-    updateCardsInView() {
-        const allCardButtons = document.querySelectorAll('.add-to-path-btn');
-        allCardButtons.forEach(button => {
-            const id = button.dataset.id;
-            const isInPath = patientPath.some(item => item.recommendation.recommendationId === id);
-            if (isInPath) {
-                if (!button.classList.contains('added')) {
-                    button.classList.add('added');
-                    button.innerHTML = '<i data-lucide="check"></i>';
-                    lucide.createIcons({ nodes: [button] });
-                }
-            } else {
-                if (button.classList.contains('added')) {
-                    button.classList.remove('added');
-                    button.innerHTML = '<i data-lucide="plus"></i>';
-                    lucide.createIcons({ nodes: [button] });
-                }
-            }
-        });
+        this.dom.pathModalOverlay.classList.remove('visible');
     }
 
     clearPath() {
-        patientPath = [];
-        this.updatePathFab();
-        this.renderPathModalContent();
-        this.updateCardsInView();
+        if (this.state.patientPath.length === 0) return;
+        if (confirm('Möchten Sie den gesamten Pfad wirklich löschen?')) {
+            this.state.patientPath = [];
+            this.updateFab();
+            this.updatePathButtonsState();
+            this.renderPathModal();
+            this.closePathModal();
+        }
     }
 
-    printPath() {
-        if (patientPath.length > 0) {
-            const firstItemContext = patientPath[0].context;
-            this.elements.pathPrintHeader.innerHTML = `
-                <h1>Diagnostischer Pfad: ${firstItemContext.entityName}</h1>
-                <p>Zusammengestellt aus verschiedenen Leitlinien.</p>
-            `;
-        } else {
-            this.elements.pathPrintHeader.innerHTML = `<h1>Diagnostischer Pfad</h1>`;
+    renderPathModal() {
+        const container = this.dom.pathModalContent;
+        container.innerHTML = '';
+
+        if (this.state.patientPath.length === 0) {
+            this.dom.emptyPathMessage.style.display = 'flex';
+            return;
         }
-        window.print();
-        this.elements.pathPrintHeader.innerHTML = '';
-    }
+        
+        this.dom.emptyPathMessage.style.display = 'none';
 
-    exportPathAsTxt() {
-        if (patientPath.length === 0) return;
+        // Generate Print Header inside Content for window.print() visibility
+        const printHeader = document.createElement('div');
+        printHeader.className = 'path-print-header';
+        printHeader.innerHTML = `
+            <h1>Diagnostischer Patientenpfad</h1>
+            <p>Erstellt am ${new Date().toLocaleDateString()} - OncoGuidelines</p>
+            <hr style="margin: 20px 0; border-color: #ccc;">
+        `;
+        container.appendChild(printHeader);
 
-        let content = "Diagnostischer Patientenpfad\n";
-        content += "========================================\n\n";
-
-        if (patientPath.length > 0) {
-            const firstItemContext = patientPath[0].context;
-            content += `Tumorentität: ${firstItemContext.entityName}\n`;
-            if (firstItemContext.subtypeName !== firstItemContext.entityName) {
-                content += `Subtyp: ${firstItemContext.subtypeName}\n\n`;
-            }
-        }
-
-        const groupedByGuideline = patientPath.reduce((acc, item) => {
-            const key = `${item.context.guidelineTitle} (${item.context.issuingSociety}, ${item.context.version})`;
-            if (!acc[key]) {
-                acc[key] = [];
-            }
-            acc[key].push(item.recommendation);
-            return acc;
-        }, {});
-
-        for (const guidelineKey in groupedByGuideline) {
-            content += `----------------------------------------\n`;
-            content += `Leitlinie: ${guidelineKey}\n`;
-            content += `----------------------------------------\n\n`;
+        this.state.patientPath.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'path-item';
             
-            groupedByGuideline[guidelineKey].forEach(rec => {
-                content += `[ ] ${rec.procedure} (${rec.modality})\n`;
-                content += `    - Klinische Situation: ${rec.clinicalSituation}\n`;
-                content += `    - Stadium / Kontext: ${rec.clinicalStage}\n`;
-                content += `    - Anatomische Region: ${rec.anatomicRegion}\n`;
-                if (rec.details) {
-                    content += `    - Details: ${rec.details}\n`;
-                }
-                content += "\n";
-            });
-        }
+            const strengthClass = this.getStrengthClass(item.recommendationStrength);
+            const symbol = this.getStrengthSymbol(strengthClass);
 
-        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            el.innerHTML = `
+                <div class="path-item-details">
+                    <h3>${item.procedure}</h3>
+                    <div class="path-item-info">
+                        <strong>${item.context.entity}</strong> (${item.context.society})<br>
+                        <span style="color: var(--text-tertiary);">${item.clinicalSituation} - ${item.clinicalStage}</span><br>
+                        <span style="display: inline-block; margin-top: 4px; padding: 2px 6px; background: var(--bg-card); border-radius: 4px; border: 1px solid var(--border-color); font-size: 11px;">
+                            ${item.modality}
+                        </span>
+                        <span style="margin-left: 8px; font-weight: 600; color: var(--text-primary);">
+                            ${symbol} ${item.recommendationStrength}
+                        </span>
+                    </div>
+                </div>
+                <button class="path-item-remove-btn" title="Entfernen">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            `;
+            
+            el.querySelector('.path-item-remove-btn').addEventListener('click', () => this.togglePathItem(item));
+            container.appendChild(el);
+        });
+        
+        this.initializeIcons();
+    }
+
+    exportPath() {
+        if (this.state.patientPath.length === 0) return;
+
+        let text = "DIAGNOSTISCHER PATIENTENPFAD\n";
+        text += "============================\n";
+        text += `Erstellt: ${new Date().toLocaleString()}\n`;
+        text += `Quelle: OncoGuidelines App\n\n`;
+
+        this.state.patientPath.forEach((item, idx) => {
+            text += `[${idx + 1}] ${item.procedure.toUpperCase()}\n`;
+            text += `    Entität:     ${item.context.entity} (${item.context.subtype})\n`;
+            text += `    Leitlinie:   ${item.context.society} - ${item.context.guidelineTitle} (${item.context.version})\n`;
+            text += `    Situation:   ${item.clinicalSituation}\n`;
+            text += `    Stadium:     ${item.clinicalStage}\n`;
+            text += `    Modalität:   ${item.modality}\n`;
+            text += `    Region:      ${item.anatomicRegion}\n`;
+            text += `    Empfehlung:  ${item.recommendationStrength}\n`;
+            if (item.details) text += `    Details:     ${item.details}\n`;
+            if (item.frequency) text += `    Frequenz:    ${item.frequency}\n`;
+            if (item.justification) text += `    Begründung:  ${item.justification}\n`;
+            text += "\n----------------------------------------\n\n";
+        });
+
+        const blob = new Blob([text], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const entityName = patientPath.length > 0 ? patientPath[0].context.entityName.replace(/[^a-z0-9]/gi, '_') : 'Export';
-        a.download = `Patientenpfad_${entityName}.txt`;
+        a.download = `Patientenpfad_${new Date().toISOString().slice(0,10)}.txt`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
-
-    resetFilters() {
-        filters.modality = [];
-        filters.strength = [];
-        filters.cardSearch = '';
-        currentSort = 'default';
-        this.elements.cardSearchInput.value = '';
-        this.elements.sortSelect.value = 'default';
-    }
-
-    renderFilterOptions(guideline) {
-        const allRecs = Object.values(guideline.recommendationGroups).flat();
-        const modalities = [...new Set(allRecs.map(rec => rec.modality))].sort();
-
-        this.elements.modalityFilter.innerHTML = '';
-        modalities.forEach(modality => {
-            const btn = document.createElement('button');
-            btn.className = 'filter-btn';
-            btn.textContent = modality;
-            btn.dataset.filter = 'modality';
-            btn.dataset.value = modality;
-            btn.addEventListener('click', () => this.handleFilterClick(btn));
-            this.elements.modalityFilter.appendChild(btn);
-        });
-
-        this.elements.strengthFilter.innerHTML = '';
-        const strengthGroups = {
-            'empfohlen': 'Empfohlen',
-            'kann-erwogen-werden': 'Kann',
-            'nicht-empfohlen': 'Nicht Empfohlen'
-        };
-        Object.entries(strengthGroups).forEach(([key, value]) => {
-            const btn = document.createElement('button');
-            btn.className = 'filter-btn';
-            btn.textContent = value;
-            btn.dataset.filter = 'strength';
-            btn.dataset.value = key;
-            btn.addEventListener('click', () => this.handleFilterClick(btn));
-            this.elements.strengthFilter.appendChild(btn);
-        });
-    }
-
-    handleFilterClick(button) {
-        button.classList.toggle('active');
-        const filterType = button.dataset.filter;
-        const value = button.dataset.value;
-
-        const index = filters[filterType].indexOf(value);
-        if (index > -1) {
-            filters[filterType].splice(index, 1);
-        } else {
-            filters[filterType].push(value);
-        }
-        this.renderTimelineView(currentGuideline);
-    }
-
-    getFilteredAndSortedRecommendations(groupedRecommendations) {
-        const result = {};
-        const strengthOrder = {
-            'soll': 1,
-            'empfohlen': 1,
-            'obligat': 1,
-            'kann-erwogen-werden': 2,
-            'optional': 2,
-            'fakultativ': 2,
-            'nicht-empfohlen': 3,
-            'sollte-nicht': 3
-        };
-
-        for (const situation in groupedRecommendations) {
-            let recommendations = groupedRecommendations[situation];
-
-            if (filters.modality.length > 0) {
-                recommendations = recommendations.filter(rec => filters.modality.includes(rec.modality));
-            }
-
-            if (filters.strength.length > 0) {
-                recommendations = recommendations.filter(rec => {
-                    const strengthClass = this.getStrengthClass(rec.recommendationStrength);
-                    return filters.strength.includes(strengthClass);
-                });
-            }
-
-            if (filters.cardSearch) {
-                const searchLower = filters.cardSearch.toLowerCase();
-                recommendations = recommendations.filter(rec => 
-                    rec.procedure.toLowerCase().includes(searchLower) ||
-                    rec.justification.toLowerCase().includes(searchLower) ||
-                    (rec.sourceText && rec.sourceText.toLowerCase().includes(searchLower))
-                );
-            }
-
-            if (currentSort === 'strength') {
-                recommendations.sort((a, b) => {
-                    const classA = this.getStrengthClass(a.recommendationStrength);
-                    const classB = this.getStrengthClass(b.recommendationStrength);
-                    return (strengthOrder[classA] || 99) - (strengthOrder[classB] || 99);
-                });
-            } else if (currentSort === 'procedure') {
-                recommendations.sort((a, b) => a.procedure.localeCompare(b.procedure));
-            }
-            
-            result[situation] = recommendations;
-        }
-        return result;
-    }
 }
 
+// Start Application
 document.addEventListener('DOMContentLoaded', () => {
-    const app = new PatientenpfadeApp();
+    new PatientenpfadeApp();
 });
